@@ -12,24 +12,19 @@
     <select id="filter-category">
         <option value="">全部分类</option>
     </select>
-
-    <div class="time-filter">
-        <div class="time-quick-btns">
-            <button type="button" class="time-btn" data-range="today">今天</button>
-            <button type="button" class="time-btn" data-range="yesterday">昨天</button>
-            <button type="button" class="time-btn" data-range="week">本周</button>
-            <button type="button" class="time-btn active" data-range="month">本月</button>
-            <button type="button" class="time-btn" data-range="30d">30天</button>
-            <button type="button" class="time-btn" data-range="custom">自定义</button>
-            <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">🔄</button>
-        </div>
-        <div class="time-custom-range" id="time-custom-range" style="display:none;">
-            <input type="date" id="filter-start" class="date-input">
-            <span class="date-sep">—</span>
-            <input type="date" id="filter-end" class="date-input">
-            <button type="button" class="btn-confirm" id="btn-confirm-date">确认</button>
-        </div>
-    </div>
+    <button type="button" class="time-btn" data-range="today">今天</button>
+    <button type="button" class="time-btn" data-range="yesterday">昨天</button>
+    <button type="button" class="time-btn" data-range="week">本周</button>
+    <button type="button" class="time-btn active" data-range="month">本月</button>
+    <button type="button" class="time-btn" data-range="30d">30天</button>
+    <button type="button" class="time-btn" data-range="custom">自定义</button>
+    <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">刷新</button>
+</div>
+<div class="time-custom-range" id="time-custom-range" style="display:none;">
+    <input type="date" id="filter-start" class="date-input">
+    <span class="date-sep">—</span>
+    <input type="date" id="filter-end" class="date-input">
+    <button type="button" class="btn-confirm" id="btn-confirm-date">确认</button>
 </div>
 
 <table class="data-table">
@@ -121,7 +116,7 @@ document.getElementById('btn-confirm-date').addEventListener('click', function()
 });
 
 document.getElementById('btn-refresh').addEventListener('click', function() {
-    loadCases(1);
+    window.location.reload();
 });
 
 function loadCategories() {

@@ -110,13 +110,17 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 .btn-primary { background: #4a6cf7; }
 
 /* 表格 - 紧凑风格 */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
 .data-table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
     background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .data-table th, .data-table td {
@@ -132,12 +136,19 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     color: #555;
     font-size: 13px;
     border-bottom: 2px solid #e8e8e8;
+    white-space: nowrap;
 }
 
 .data-table tr:hover { background: #f5f7fa; }
 
 .data-table td {
     color: #444;
+}
+
+/* 状态和操作列不换行 */
+.data-table td:nth-last-child(1),
+.data-table td:nth-last-child(2) {
+    white-space: nowrap;
 }
 
 .truncate {
@@ -158,6 +169,19 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 
 .badge-pending { background: #fff7e6; color: #d48806; }
 .badge-annotated { background: #f6ffed; color: #52c41a; }
+
+/* 评分标签 */
+.score-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 20px;
+    white-space: nowrap;
+}
+.score-excellent { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+.score-pass { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+.score-fail { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffa39e; }
 
 /* 卡片 */
 .card {
@@ -210,7 +234,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 
 /* 表单 */
 .form-group {
-    margin-bottom: 18px;
+    margin-bottom: 12px;
 }
 
 .form-group label {
@@ -301,23 +325,31 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 }
 
 .btn-copy-link {
-    background: none;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
     border: 1px solid #d9d9d9;
     border-radius: 4px;
     cursor: pointer;
-    padding: 2px 6px;
-    font-size: 14px;
-    line-height: 1;
-    transition: border-color 0.2s;
+    padding: 0;
+    transition: all 0.2s;
     flex-shrink: 0;
+    color: #555;
 }
 
 .btn-copy-link:hover {
     border-color: #4a6cf7;
+    color: #4a6cf7;
+    background: #f0f5ff;
 }
 
 .btn-copy-link.copied {
     border-color: #52c41a;
+    color: #52c41a;
+    background: #f6ffed;
 }
 
 /* 分数选择器 */
@@ -382,8 +414,14 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 /* 整体分数进度条 */
 .overall-score-wrap {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overall-score-display {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
 }
 
 .overall-score {
@@ -394,8 +432,13 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     text-align: center;
 }
 
+.overall-formula {
+    font-size: 13px;
+    color: #888;
+    font-weight: 400;
+}
+
 .overall-bar-bg {
-    flex: 1;
     height: 10px;
     background: #f0f0f0;
     border-radius: 5px;
@@ -479,6 +522,11 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     transition: all 0.2s;
     line-height: 1;
     white-space: nowrap;
+    min-width: 32px;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .time-btn-refresh:hover {
@@ -490,16 +538,120 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     animation: spin 0.6s ease-in-out;
 }
 
+.time-btn-refresh.spinning .refresh-icon {
+    animation: spin 0.6s ease-in-out;
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-.time-custom-range {
+/* Case列表表头区域 */
+.case-list-header {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.case-list-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a2e;
+    white-space: nowrap;
+}
+
+.case-list-title .case-count {
+    color: #888;
+    font-size: 13px;
+    font-weight: 400;
+    margin-left: 8px;
+}
+
+/* 每页显示选择框 */
+.per-page-select {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    white-space: nowrap;
+}
+
+.per-page-select select {
+    padding: 4px 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.per-page-select select:focus {
+    border-color: #4a6cf7;
+    box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
+}
+
+/* 分页信息区域 */
+.pagination-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #888;
+}
+
+.pagination-info .record-info {
+    white-space: nowrap;
+}
+
+.pagination-nav {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.page-btn-prev,
+.page-btn-next {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #555;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0 10px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn-prev:hover,
+.page-btn-next:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+
+.page-btn-prev:disabled,
+.page-btn-next:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    border-color: #f0f0f0;
+    background: #fafafa;
+}
+
+.time-custom-range {
+    display: none;
     gap: 8px;
     align-items: center;
     margin-top: 10px;
+    margin-bottom: 16px;
     padding: 10px 12px;
     background: #fafafa;
     border-radius: 6px;
@@ -539,6 +691,23 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 
 .btn-confirm:hover {
     background: #3b5de6;
+}
+
+.btn-cancel {
+    padding: 6px 16px;
+    background: #fff;
+    color: #555;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-cancel:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
 }
 
 .radio-group {

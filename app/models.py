@@ -18,6 +18,7 @@ class Case(db.Model):
     source = db.Column(db.Text, nullable=True)
     description = db.Column(db.Text, nullable=True)
     category = db.Column(db.String(64), nullable=True)
+    use_sliding_window = db.Column(db.Boolean, nullable=True, default=False)
     agent_input = db.Column(db.Text, nullable=False)
     agent_output = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(16), nullable=False, default="pending")
@@ -37,6 +38,12 @@ class Case(db.Model):
         if brief:
             d["source"] = self.source
             d["description"] = self.description
+            d["use_sliding_window"] = self.use_sliding_window
+            if self.annotation:
+                d["accuracy_score"] = self.annotation.accuracy_score
+                d["operability_score"] = self.annotation.operability_score
+                d["readability_score"] = self.annotation.readability_score
+                d["overall_score"] = self.annotation.overall_score
             return d
         d.update(
             {

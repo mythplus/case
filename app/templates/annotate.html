@@ -10,10 +10,15 @@
             <div id="case-detail" class="info-grid">加载中...</div>
             <div class="annotate-link-section" id="annotate-link-section" style="display:none;">
                 <div class="info-grid annotate-link-row">
-                    <strong>企微链接：</strong>
+                    <strong>链接：</strong>
                     <div class="link-copy-wrap">
                         <a id="annotate-link" class="annotate-link" href="#" target="_blank"></a>
-                        <button type="button" class="btn-copy-link" id="btn-copy-link" title="复制链接">📋</button>
+                        <button type="button" class="btn-copy-link" id="btn-copy-link" title="复制链接">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -60,9 +65,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label>整体分数</label>
+                    <label>整体分数（自动计算）</label>
                     <div class="overall-score-wrap">
-                        <div id="overall-score" class="overall-score">-</div>
+                        <div class="overall-score-display">
+                            <span id="overall-score" class="overall-score">-</span>
+                            <span class="overall-formula"> = (准确度 + 可操作性 + 可读性) / 3</span>
+                        </div>
                         <div class="overall-bar-bg">
                             <div id="overall-bar" class="overall-bar" style="width: 0%"></div>
                         </div>
@@ -110,6 +118,7 @@ function loadCaseData() {
         .then(data => {
             const c = data.case;
             document.getElementById('case-detail').innerHTML = `
+                <div><strong>Case ID：</strong>${c.case_id || caseId}</div>
                 <div><strong>来源：</strong>${c.source || '-'}</div>
                 <div><strong>分类：</strong>${c.category || '-'}</div>
                 <div><strong>描述：</strong>${c.description || '-'}</div>
@@ -237,33 +246,56 @@ document.getElementById('annotate-form').addEventListener('submit', function(e) 
     });
 });
 
-// 企微链接一键复制
-document.getElementById('btn-copy-link').addEventListener('click', function() {
-    const linkEl = document.getElementById('annotate-link');
-    const url = linkEl.href;
-    navigator.clipboard.writeText(url).then(() => {
-        this.textContent = '✅';
-        this.classList.add('copied');
-        setTimeout(() => {
-            this.textContent = '📋';
-            this.classList.remove('copied');
-        }, 1500);
-    }).catch(() => {
-        // fallback for older browsers
+// 链接一键复制
+(function initCopyLink() {
+    const originalIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+    const okIcon = '✅';
+
+    function doCopy(btn, url) {
+        function showOk() {
+            btn.innerHTML = okIcon;
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = originalIcon;
+                btn.classList.remove('copied');
+            }, 1500);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(showOk).catch(() => fallbackCopy(btn, url, showOk));
+        } else {
+            fallbackCopy(btn, url, showOk);
+        }
+    }
+
+    function fallbackCopy(btn, url, callback) {
         const tmp = document.createElement('textarea');
         tmp.value = url;
+        tmp.style.position = 'fixed';
+        tmp.style.opacity = '0';
         document.body.appendChild(tmp);
         tmp.select();
-        document.execCommand('copy');
+        try {
+            document.execCommand('copy');
+            callback();
+        } catch (e) {
+            console.error('复制失败:', e);
+        }
         document.body.removeChild(tmp);
-        this.textContent = '✅';
-        this.classList.add('copied');
-        setTimeout(() => {
-            this.textContent = '📋';
-            this.classList.remove('copied');
-        }, 1500);
-    });
-});
+    }
+
+    const copyBtn = document.getElementById('btn-copy-link');
+    if (copyBtn) {
+        // 避免重复绑定
+        const newBtn = copyBtn.cloneNode(true);
+        copyBtn.parentNode.replaceChild(newBtn, copyBtn);
+        newBtn.addEventListener('click', function() {
+            const linkEl = document.getElementById('annotate-link');
+            const url = linkEl ? linkEl.href : '';
+            if (!url) return;
+            doCopy(this, url);
+        });
+    }
+})();
 
 loadCaseData();
 </script>

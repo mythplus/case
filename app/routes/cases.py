@@ -73,6 +73,7 @@ def list_cases():
 
     col = getattr(Case, sort_by, Case.created_at)
     q = q.order_by(col.desc() if sort_order == "desc" else col.asc())
+    q = q.options(db.joinedload(Case.annotation))
 
     total = q.count()
     cases = q.offset((page - 1) * page_size).limit(page_size).all()

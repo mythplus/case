@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 
 def _now():
-    return datetime.now(timezone.utc)
+    return datetime.now()
 
 
 class Case(db.Model):

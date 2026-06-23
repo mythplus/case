@@ -3,14 +3,20 @@
 {% block content %}
 <h2>数据统计看板</h2>
 
-<div class="date-filter">
-    <input type="date" id="stats-start" placeholder="开始日期">
-    <input type="date" id="stats-end" placeholder="结束日期">
-    <button onclick="loadStats()">刷新</button>
+<div class="filters">
+    <button type="button" class="time-btn" data-range="custom">自定义时间</button>
+    <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">刷新</button>
+</div>
+
+<div class="time-custom-range" id="time-custom-range">
+    <input type="date" id="stats-start" class="date-input">
+    <span class="date-sep">—</span>
+    <input type="date" id="stats-end" class="date-input">
+    <button type="button" class="btn-confirm" id="btn-confirm-date">确认</button>
+    <button type="button" class="btn-cancel" id="btn-cancel-date">取消</button>
 </div>
 
 <div class="dashboard-overview" id="overview-cards"></div>
-<div class="stats-cards" id="avg-cards"></div>
 
 <div class="card">
     <h3>分类标注分布</h3>
@@ -26,7 +32,15 @@
     <h3>低分 Case 列表</h3>
     <div class="filter-row">
         <label>阈值：</label>
-        <input type="number" id="low-threshold" value="1.0" step="0.1" min="0" max="2" onchange="loadStats()">
+        <select id="low-threshold" onchange="loadStats()">
+            <option value="0">0</option>
+            <option value="0.33">0.33</option>
+            <option value="0.67">0.67</option>
+            <option value="1" selected>1.00</option>
+            <option value="1.33">1.33</option>
+            <option value="1.67">1.67</option>
+            <option value="2">2.00</option>
+        </select>
     </div>
     <table class="data-table">
         <thead>
@@ -41,6 +55,46 @@
 <script>
 const API = '/api/v1';
 
+// 时间筛选逻辑 - 仅自定义模式
+let currentRange = '';
+
+document.querySelectorAll('.time-btn[data-range]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const range = this.dataset.range;
+        if (range === 'custom') {
+            const customRange = document.getElementById('time-custom-range');
+            if (customRange.style.display === 'none' || !customRange.style.display) {
+                customRange.style.display = 'flex';
+                currentRange = 'custom';
+                this.classList.add('active');
+            } else {
+                customRange.style.display = 'none';
+                currentRange = '';
+                this.classList.remove('active');
+            }
+        }
+    });
+});
+
+document.getElementById('btn-confirm-date').addEventListener('click', function() {
+    currentRange = 'custom';
+    document.querySelector('.time-btn[data-range="custom"]').classList.add('active');
+    loadStats();
+});
+
+document.getElementById('btn-cancel-date').addEventListener('click', function() {
+    document.getElementById('time-custom-range').style.display = 'none';
+    document.getElementById('stats-start').value = '';
+    document.getElementById('stats-end').value = '';
+    currentRange = '';
+    document.querySelector('.time-btn[data-range="custom"]').classList.remove('active');
+    loadStats();
+});
+
+document.getElementById('btn-refresh').addEventListener('click', function() {
+    window.location.reload();
+});
+
 function loadStats() {
     const params = new URLSearchParams();
     const start = document.getElementById('stats-start').value;
@@ -54,31 +108,28 @@ function loadStats() {
         .then(r => r.json())
         .then(data => {
             const ov = data.overview;
+const avgOverall = data.averages && data.averages.overall ? data.averages.overall : 0;
             document.getElementById('overview-cards').innerHTML = `
                 <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${ov.total_cases}</div>
                     <div class="dashboard-stat-label">总 Case 数</div>
+                    <div class="dashboard-stat-value">${ov.total_cases}</div>
                 </div>
                 <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${ov.annotated_cases}</div>
                     <div class="dashboard-stat-label">已标注</div>
+                    <div class="dashboard-stat-value">${ov.annotated_cases}</div>
                 </div>
                 <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${ov.pending_cases}</div>
                     <div class="dashboard-stat-label">待标注</div>
+                    <div class="dashboard-stat-value">${ov.pending_cases}</div>
                 </div>
                 <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${(ov.annotation_rate * 100).toFixed(0)}%</div>
                     <div class="dashboard-stat-label">标注完成率</div>
+                    <div class="dashboard-stat-value">${(ov.annotation_rate * 100).toFixed(0)}%</div>
                 </div>
-            `;
-
-            const av = data.averages;
-            document.getElementById('avg-cards').innerHTML = `
-                <div class="stat-card"><div class="stat-value">${av.accuracy}</div><div class="stat-label">平均准确度</div></div>
-                <div class="stat-card"><div class="stat-value">${av.operability}</div><div class="stat-label">平均可操作性</div></div>
-                <div class="stat-card"><div class="stat-value">${av.readability}</div><div class="stat-label">平均可读性</div></div>
-                <div class="stat-card"><div class="stat-value">${av.overall}</div><div class="stat-label">平均整体分数</div></div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-label">整体平均分</div>
+                    <div class="dashboard-stat-value">${avgOverall.toFixed(2)}</div>
+                </div>
             `;
 
             document.getElementById('category-table').innerHTML = data.category_distribution.map(c => `

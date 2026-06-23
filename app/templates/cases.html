@@ -1,20 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Case 列表 - 标注平台{% endblock %}
 {% block content %}
-<div class="case-list-header">
-    <h2 class="case-list-title">Case 列表<span class="case-count" id="case-count"></span></h2>
-    <div class="per-page-select">
-        <span>每页显示</span>
-        <select id="per-page" onchange="changePerPage(this.value)">
-            <option value="10">10</option>
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-        </select>
-        <span>条</span>
-    </div>
-</div>
-
 <div class="filters">
     <select id="filter-status">
         <option value="">全部状态</option>
@@ -26,6 +12,7 @@
     </select>
     <button type="button" class="time-btn" data-range="custom">自定义时间</button>
     <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">刷新</button>
+    <button type="button" class="btn btn-add-case" id="btn-add-case" title="添加 Case">+ 添加 Case</button>
 </div>
 
 <div class="time-custom-range" id="time-custom-range">
@@ -37,31 +24,111 @@
 </div>
 
 <div class="table-wrapper">
+<div class="case-list-header">
+<h2 class="case-list-title">Case 列表</h2>
+    <div class="per-page-select">
+        <select id="per-page" onchange="changePerPage(this.value)">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+        <span>/ 页</span>
+    </div>
+</div>
+<div class="table-scroll-area">
+
+<!-- 删除确认模态框 -->
+<div class="modal-overlay" id="delete-modal">
+    <div class="modal-dialog">
+        <div class="modal-icon">!</div>
+        <h3 class="modal-title">确定删除此 Case?</h3>
+        <p class="modal-message">删除后数据不可恢复</p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" id="modal-cancel">取消</button>
+            <button class="modal-btn modal-btn-confirm" id="modal-confirm">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 添加 Case 模态框 -->
+<div class="modal-overlay" id="add-case-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">添加 Case</h3>
+            <button class="modal-close" id="modal-add-close" type="button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-case-form">
+                <div class="form-group">
+                    <label>Query <span class="required">*</span></label>
+                    <textarea id="add-query" rows="4" placeholder="Agent 输入内容" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Answer <span class="required">*</span></label>
+                    <textarea id="add-answer" rows="4" placeholder="Agent 输出内容" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>来源</label>
+                        <input type="text" id="add-source" placeholder="如：告警分析助手">
+                    </div>
+                    <div class="form-group">
+                        <label>分类</label>
+                        <input type="text" id="add-category" placeholder="如：内存告警">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>运行时间 (s)</label>
+                        <input type="number" id="add-runtime" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Token 消耗</label>
+                        <input type="number" id="add-tokens" value="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea id="add-description" rows="2" placeholder="Case 描述"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>详细分析过程 (Markdown)</label>
+                    <textarea id="add-analysis" rows="5" placeholder="详细的分析过程，支持 Markdown 格式"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-cancel" id="modal-add-cancel">取 消</button>
+            <button class="modal-btn modal-btn-confirm" id="modal-add-submit">提 交</button>
+        </div>
+    </div>
+</div>
+
 <table class="data-table">
     <thead>
         <tr>
-            <th>Case ID</th>
-            <th>来源</th>
-            <th>分类</th>
-            <th>描述</th>
-            <th>状态</th>
-            <th>准确度</th>
-            <th>可操作性</th>
-            <th>可读性</th>
-            <th>整体分数</th>
-            <th>作用滑动窗口</th>
-            <th>创建时间</th>
-            <th>链接</th>
-            <th>操作</th>
+            <th style="width:6%">Case ID</th>
+            <th style="width:14%">来源</th>
+            <th style="width:7%">分类</th>
+            <th style="width:12%">描述</th>
+            <th style="width:6%">状态</th>
+            <th style="width:6%">准确度</th>
+            <th style="width:7%">可操作性</th>
+            <th style="width:6%">可读性</th>
+            <th style="width:7%">整体分数</th>
+
+            <th style="width:9%">创建时间</th>
+            <th style="width:13%">操作</th>
         </tr>
     </thead>
     <tbody id="case-list"></tbody>
 </table>
 </div>
-
 <div class="pagination-info" id="pagination">
     <span class="record-info" id="record-info"></span>
     <div class="pagination-nav" id="pagination-nav"></div>
+</div>
 </div>
 {% endblock %}
 
@@ -116,8 +183,110 @@ document.getElementById('btn-refresh').addEventListener('click', function() {
     window.location.reload();
 });
 
+// 添加 Case 模态框逻辑
+const addModal = document.getElementById('add-case-modal');
+
+document.getElementById('btn-add-case').addEventListener('click', function() {
+    addModal.classList.add('active');
+});
+
+document.getElementById('modal-add-close').addEventListener('click', closeAddModal);
+document.getElementById('modal-add-cancel').addEventListener('click', closeAddModal);
+addModal.addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+});
+
+function closeAddModal() {
+    addModal.classList.remove('active');
+    document.getElementById('add-case-form').reset();
+}
+
+document.getElementById('modal-add-submit').addEventListener('click', function() {
+    const query = document.getElementById('add-query').value.trim();
+    const answer = document.getElementById('add-answer').value.trim();
+    const source = document.getElementById('add-source').value.trim();
+    const category = document.getElementById('add-category').value.trim();
+    const runtime = parseFloat(document.getElementById('add-runtime').value) || 0;
+    const tokens = parseInt(document.getElementById('add-tokens').value) || 0;
+    const description = document.getElementById('add-description').value.trim();
+    const analysis = document.getElementById('add-analysis').value.trim();
+
+    if (!query) {
+        alert('请填写 Query');
+        return;
+    }
+    if (!answer) {
+        alert('请填写 Answer');
+        return;
+    }
+
+    // 组装 agent_output：Answer + 分析过程（如果有）
+    let agentOutput = answer;
+    if (analysis) {
+        agentOutput += '\n\n---\n\n' + analysis;
+    }
+
+    const payload = {
+        agent_input: query,
+        agent_output: agentOutput,
+        source: source || null,
+        category: category || null,
+        run_time_ms: Math.round(runtime * 1000),
+        tokens_consumed: tokens || null,
+        description: description || null,
+    };
+
+    fetch(API + '/cases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => {
+        if (r.ok) {
+            closeAddModal();
+            loadCases(1);
+        } else {
+            r.json().then(data => alert(data.error || '添加失败')).catch(() => alert('添加失败'));
+        }
+    })
+    .catch(() => alert('网络错误'));
+});
+
 let currentPage = 1;
 let currentPageSize = 25;
+
+let deleteTargetId = null;
+
+function deleteCase(caseId) {
+    deleteTargetId = caseId;
+    document.getElementById('delete-modal').classList.add('active');
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('active');
+    deleteTargetId = null;
+}
+
+function confirmDelete() {
+    if (!deleteTargetId) return;
+    const caseId = deleteTargetId;
+    closeDeleteModal();
+    fetch(API + '/cases/' + caseId, { method: 'DELETE' })
+        .then(r => {
+            if (r.ok) {
+                loadCases(currentPage);
+            } else {
+                r.json().then(data => alert(data.error || '删除失败')).catch(() => alert('删除失败'));
+            }
+        })
+        .catch(() => alert('网络错误'));
+}
+
+document.getElementById('modal-cancel').addEventListener('click', closeDeleteModal);
+document.getElementById('modal-confirm').addEventListener('click', confirmDelete);
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
 
 function loadCategories() {
     fetch(API + '/cases?page_size=1000')
@@ -160,8 +329,8 @@ function loadCases(page) {
                 };
                 return `
                 <tr>
-                    <td>${c.case_id}</td>
-                    <td class="truncate" title="[${c.case_id}] ${c.source || ''}">[${c.case_id}] ${c.source || '-'}</td>
+                    <td><a href="/annotate/${c.case_id}" class="case-id-link">${c.case_id}</a></td>
+<td class="truncate" title="${c.source || ''}">${c.source || '-'}</td>
                     <td>${c.category || '-'}</td>
                     <td class="truncate" title="${c.description || ''}">${c.description || '-'}</td>
                     <td><span class="badge badge-${c.status}">${c.status === 'pending' ? '待标注' : '已标注'}</span></td>
@@ -169,17 +338,14 @@ function loadCases(page) {
                     <td>${scoreLabel(c.operability_score)}</td>
                     <td>${scoreLabel(c.readability_score)}</td>
                     <td>${formatOverall(c.overall_score)}</td>
-                    <td>${c.use_sliding_window != null ? (c.use_sliding_window ? '是' : '否') : '-'}</td>
+
                     <td>${c.created_at ? new Date(c.created_at).toLocaleString('zh-CN') : '-'}</td>
-                    <td><a href="${annotateUrl}" class="case-link" title="${annotateUrl}" onclick="event.preventDefault();navigator.clipboard.writeText('${annotateUrl}').then(()=>{this.textContent='✅ 已复制';setTimeout(()=>{this.textContent='${annotateUrl}'},1500)}).catch(()=>{this.textContent='${annotateUrl}'});">${annotateUrl}</a></td>
-                    <td><a href="/annotate/${c.case_id}" class="btn btn-sm">${c.status === 'pending' ? '去标注' : '查看'}</a></td>
+                    <td class="action-cell"><div class="action-btns"><a href="/annotate/${c.case_id}" class="btn btn-sm ${c.status === 'pending' ? 'btn-annotate' : 'btn-view'}">${c.status === 'pending' ? '去标注' : '查看'}</a><button class="btn btn-sm btn-delete" onclick="deleteCase('${c.case_id}')">删除</button></div></td>
                 </tr>
                 `;
             }).join('');
 
-            // 更新Case总数
-            const countEl = document.getElementById('case-count');
-            countEl.textContent = `（共 ${data.total} 条）`;
+
 
             renderPagination(data, page);
         });
@@ -189,7 +355,6 @@ function renderPagination(data, current) {
     const total = Math.ceil(data.total / data.page_size);
     const startRecord = (current - 1) * data.page_size + 1;
     const endRecord = Math.min(current * data.page_size, data.total);
-    const el = document.getElementById('pagination');
     const navEl = document.getElementById('pagination-nav');
     const recordEl = document.getElementById('record-info');
 
@@ -206,32 +371,26 @@ function renderPagination(data, current) {
     // 上一页按钮
     html += `<button class="page-btn-prev" onclick="loadCases(${current - 1})" ${current === 1 ? 'disabled' : ''}>&lt; 上一页</button>`;
 
-    // 页码按钮 - 智能显示范围
-    const maxVisible = 5;
-    let startPage = Math.max(1, current - Math.floor(maxVisible / 2));
-    let endPage = Math.min(total, startPage + maxVisible - 1);
-    if (endPage - startPage < maxVisible - 1) {
-        startPage = Math.max(1, endPage - maxVisible + 1);
-    }
-
-    if (startPage > 1) {
-        html += `<button class="page-btn" onclick="loadCases(1)">1</button>`;
-        if (startPage > 2) html += `<span style="color:#999;padding:0 4px;">...</span>`;
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<button class="page-btn${i === current ? ' active' : ''}" onclick="loadCases(${i})">${i}</button>`;
-    }
-
-    if (endPage < total) {
-        if (endPage < total - 1) html += `<span style="color:#999;padding:0 4px;">...</span>`;
-        html += `<button class="page-btn" onclick="loadCases(${total})">${total}</button>`;
-    }
+    // 当前页码
+    html += `<span style="padding:0 8px;font-size:14px;color:#333;font-weight:500;">${current} / ${total}</span>`;
 
     // 下一页按钮
     html += `<button class="page-btn-next" onclick="loadCases(${current + 1})" ${current === total ? 'disabled' : ''}>下一页 &gt;</button>`;
 
+    // 跳转到指定页
+    html += `<span style="color:#999;margin:0 6px 0 10px;font-size:12px;">跳转到</span><input type="number" class="page-jump-input" id="page-jump-input" min="1" max="${total}" placeholder="页码"><button class="page-btn-jump" onclick="jumpToPage(${total})">确定</button>`;
+
     navEl.innerHTML = html;
+
+    // 为输入框绑定回车键
+    setTimeout(() => {
+        const jumpInput = document.getElementById('page-jump-input');
+        if (jumpInput) {
+            jumpInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') jumpToPage(total);
+            });
+        }
+    }, 0);
 }
 
 function changePerPage(value) {
@@ -239,11 +398,31 @@ function changePerPage(value) {
     loadCases(1);
 }
 
+function jumpToPage(total) {
+    const input = document.getElementById('page-jump-input');
+    if (!input) return;
+    let page = parseInt(input.value);
+    if (isNaN(page) || page < 1) {
+        alert('请输入有效的页码');
+        return;
+    }
+    if (page > total) {
+        alert('页码不能超过总页数 ' + total + ' 页');
+        return;
+    }
+    loadCases(page);
+}
+
+// 筛选框change事件
+document.getElementById('filter-status').addEventListener('change', function() {
+    loadCases(1);
+});
+document.getElementById('filter-category').addEventListener('change', function() {
+    loadCases(1);
+});
+
 document.getElementById('btn-refresh').addEventListener('click', function() {
-    const btn = this;
-    btn.classList.add('spinning');
-    loadCases(currentPage);
-    setTimeout(() => btn.classList.remove('spinning'), 600);
+    window.location.reload();
 });
 
 loadCategories();

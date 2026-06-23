@@ -36,9 +36,10 @@ body {
 }
 
 .nav-links a {
-    color: rgba(255,255,255,0.7);
+    color: #fff;
     text-decoration: none;
     font-size: 14px;
+    font-weight: 700;
     padding: 6px 16px;
     border-radius: 4px;
     transition: all 0.2s;
@@ -50,7 +51,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 24px auto;
     padding: 0 24px;
 }
@@ -73,7 +74,8 @@ h2 {
 
 .filters select, .filters input,
 .date-filter input,
-.filter-row input {
+.filter-row input,
+.filter-row select {
     padding: 7px 12px;
     border: 1px solid #d9d9d9;
     border-radius: 6px;
@@ -81,9 +83,15 @@ h2 {
     transition: border-color 0.2s;
 }
 
+.filter-row select {
+    min-width: 100px;
+    height: 36px;
+}
+
 .filters select:focus, .filters input:focus,
 .date-filter input:focus,
-.filter-row input:focus {
+.filter-row input:focus,
+.filter-row select:focus {
     outline: none;
     border-color: #4a6cf7;
     box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
@@ -109,25 +117,73 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 
 .btn-primary { background: #4a6cf7; }
 
+/* 添加 Case 按钮 */
+.btn-add-case {
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn-add-case:hover {
+    background: #3b5de6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(74,108,247,0.3);
+}
+
+/* 复制链接按钮 */
+.btn-link-copy {
+    padding: 2px 8px;
+    background: #eef2ff;
+    color: #4a6cf7;
+    border: 1px solid #c7d2fe;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn-link-copy:hover {
+    background: #4a6cf7;
+    color: #fff;
+    border-color: #4a6cf7;
+}
+.btn-link-copy.copied {
+    background: #d1fae5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
 /* 表格 - 紧凑风格 */
 .table-wrapper {
-    overflow-x: auto;
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.table-scroll-area {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
-    width: 100%;
-    min-width: 900px;
     border-collapse: collapse;
     background: #fff;
+    min-width: 100%;
+    white-space: nowrap;
 }
 
 .data-table th, .data-table td {
-    padding: 10px 14px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
     font-size: 13px;
+    vertical-align: middle;
 }
 
 .data-table th {
@@ -145,30 +201,264 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     color: #444;
 }
 
+/* Case ID 链接蓝色样式 */
+.case-id-link {
+    color: #4a6cf7;
+    text-decoration: none;
+}
+
+.case-id-link:hover {
+    color: #3656d8;
+    text-decoration: underline;
+}
+
+/* 去标注按钮 - 蓝色无底色 */
+.btn-annotate {
+    background: transparent;
+    color: #4a6cf7;
+    border: 1px solid #4a6cf7;
+}
+.btn-annotate:hover {
+    background: #4a6cf7;
+    color: #fff;
+}
+
+/* 查看按钮 - 绿色无底色 */
+.btn-view {
+    background: transparent;
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+.btn-view:hover {
+    background: #10b981;
+    color: #fff;
+}
+
+/* 删除按钮 */
+.btn-delete {
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    background: transparent;
+    cursor: pointer;
+}
+.btn-delete:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+/* 删除确认模态框 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-overlay.active {
+    display: flex;
+}
+.modal-dialog {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px 28px 24px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    position: relative;
+}
+.modal-dialog.modal-lg {
+    width: 560px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: left;
+    padding: 0;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px 0;
+}
+.modal-header .modal-title {
+    margin: 0;
+    font-size: 18px;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+.modal-close:hover {
+    background: #f0f0f0;
+    color: #555;
+}
+.modal-body {
+    padding: 20px 28px;
+}
+.modal-body .form-group {
+    margin-bottom: 16px;
+}
+.modal-body .form-group:last-child {
+    margin-bottom: 0;
+}
+.modal-body .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.modal-body .form-row .form-group {
+    margin-bottom: 0;
+}
+.modal-body label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+.modal-body label .required {
+    color: #f56c6c;
+}
+.modal-body input,
+.modal-body textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    resize: vertical;
+}
+.modal-body input:focus,
+.modal-body textarea:focus {
+    outline: none;
+    border-color: #4a6cf7;
+    box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
+}
+.modal-body input::placeholder,
+.modal-body textarea::placeholder {
+    color: #bbb;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 0 28px 24px;
+}
+.modal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #f59e0b;
+    color: #f59e0b;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 44px;
+    margin: 0 auto 16px;
+}
+.modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px;
+}
+.modal-message {
+    font-size: 13px;
+    color: #888;
+    margin: 0 0 20px;
+}
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+.modal-btn {
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.modal-btn-cancel {
+    background: #f0f0f0;
+    color: #666;
+}
+.modal-btn-cancel:hover {
+    background: #e0e0e0;
+}
+.modal-btn-confirm {
+    background: #4a6cf7;
+    color: #fff;
+}
+.modal-btn-confirm:hover {
+    background: #3b5de6;
+}
+
+/* 操作列对齐 */
+.action-cell {
+    white-space: nowrap;
+}
+.action-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 /* 状态和操作列不换行 */
 .data-table td:nth-last-child(1),
 .data-table td:nth-last-child(2) {
     white-space: nowrap;
+    word-break: normal;
 }
 
 .truncate {
-    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 300px;
+}
+
+.data-table td.truncate,
+.data-table th.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: normal;
 }
 
 /* 状态标签 */
 .badge {
     display: inline-block;
     padding: 2px 10px;
-    border-radius: 10px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
+    background: #fff;
+    border: 1px solid #d9d9d9;
 }
 
-.badge-pending { background: #fff7e6; color: #d48806; }
-.badge-annotated { background: #f6ffed; color: #52c41a; }
+.badge-pending { background: #fff; color: #999; border: 1px solid #d9d9d9; }
+.badge-annotated { background: #fff; color: #1890ff; border: 1px solid #1890ff; }
 
 /* 评分标签 */
 .score-tag {
@@ -180,7 +470,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     white-space: nowrap;
 }
 .score-excellent { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
-.score-pass { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+.score-pass { background: #fffbe6; color: #d48806; border: 1px solid #ffe58f; }
 .score-fail { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffa39e; }
 
 /* 卡片 */
@@ -269,7 +559,43 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 .score-group {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    gap: 8px;
+}
+
+.score-group .form-group {
+    margin-bottom: 4px;
+}
+
+.score-group + .form-group {
+    margin-top: 4px;
+}
+
+/* 页面标题栏 + 返回按钮 */
+.page-title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    color: #4a6cf7;
+    border: 1px solid #4a6cf7;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: #4a6cf7;
+    color: #fff;
 }
 
 /* 标注页面两栏布局 */
@@ -534,29 +860,18 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     border-color: #3656d8;
 }
 
-.time-btn-refresh.spinning {
-    animation: spin 0.6s ease-in-out;
-}
-
-.time-btn-refresh.spinning .refresh-icon {
-    animation: spin 0.6s ease-in-out;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
 /* Case列表表头区域 */
 .case-list-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #fafafa;
+    border-bottom: 2px solid #e8e8e8;
 }
 
 .case-list-title {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 600;
     color: #1a1a2e;
     white-space: nowrap;
@@ -593,26 +908,30 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
 }
 
-/* 分页信息区域 */
+/* 分页信息区域 - 融入表格底部 */
 .pagination-info {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 12px;
+    padding: 10px 12px;
+    background: #fafafa;
+    border-top: 2px solid #e8e8e8;
     font-size: 13px;
     color: #888;
+    position: sticky;
+    left: 0;
 }
 
 .pagination-info .record-info {
     white-space: nowrap;
+    color: #333;
 }
 
 .pagination-nav {
     display: flex;
     gap: 4px;
     align-items: center;
-    justify-content: center;
-    flex: 1;
+    justify-content: flex-end;
 }
 
 .page-btn-prev,
@@ -806,10 +1125,43 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     border-color: #4a6cf7;
 }
 
+/* 跳转到指定页 */
+.page-jump-input {
+    width: 50px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+    outline: none;
+    padding: 0 4px;
+}
+.page-jump-input:focus {
+    border-color: #4a6cf7;
+    box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
+}
+.page-btn-jump {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #555;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 10px;
+    margin-left: 4px;
+    transition: all 0.2s;
+}
+.page-btn-jump:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+
 /* Dashboard 专属 */
 .dashboard-overview {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -939,7 +1291,11 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 .quota-bar.full { background: #f56c6c; }
 .quota-bar.normal { background: #52c41a; }
 
-/* 滚动条美化 */
+/* 滚动条美化 - 更醒目 */
+.table-scroll-area::-webkit-scrollbar { width: 10px; height: 10px; }
+.table-scroll-area::-webkit-scrollbar-thumb { background: #b0b0b0; border-radius: 5px; border: 2px solid #f0f0f0; }
+.table-scroll-area::-webkit-scrollbar-thumb:hover { background: #888; }
+.table-scroll-area::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 5px; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Case 列表 - 标注平台{% endblock %}
+{% block content %}
+<h2>Case 列表</h2>
+
+<div class="filters">
+    <select id="filter-status">
+        <option value="">全部状态</option>
+        <option value="pending">待标注</option>
+        <option value="annotated">已标注</option>
+    </select>
+    <select id="filter-category">
+        <option value="">全部分类</option>
+    </select>
+
+    <div class="time-filter">
+        <div class="time-quick-btns">
+            <button type="button" class="time-btn" data-range="today">今天</button>
+            <button type="button" class="time-btn" data-range="yesterday">昨天</button>
+            <button type="button" class="time-btn" data-range="week">本周</button>
+            <button type="button" class="time-btn active" data-range="month">本月</button>
+            <button type="button" class="time-btn" data-range="30d">30天</button>
+            <button type="button" class="time-btn" data-range="custom">自定义</button>
+            <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">🔄</button>
+        </div>
+        <div class="time-custom-range" id="time-custom-range" style="display:none;">
+            <input type="date" id="filter-start" class="date-input">
+            <span class="date-sep">—</span>
+            <input type="date" id="filter-end" class="date-input">
+            <button type="button" class="btn-confirm" id="btn-confirm-date">确认</button>
+        </div>
+    </div>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Case ID</th>
+            <th>来源</th>
+            <th>分类</th>
+            <th>描述</th>
+            <th>状态</th>
+            <th>创建时间</th>
+            <th>企微链接</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody id="case-list"></tbody>
+</table>
+
+<div class="pagination" id="pagination"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API = '/api/v1';
+
+// 时间快捷按钮逻辑
+let currentRange = 'month'; // 默认本月
+
+function getDateRange(range) {
+    const now = new Date();
+    let start, end;
+    end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    switch (range) {
+        case 'today':
+            start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+            break;
+        case 'yesterday':
+            start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+            end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+            break;
+        case 'week':
+            const dayOfWeek = now.getDay() || 7;
+            start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1, 0, 0, 0);
+            break;
+        case 'month':
+            start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+            break;
+        case '30d':
+            start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29, 0, 0, 0);
+            break;
+        default:
+            start = null;
+            end = null;
+    }
+    return {
+        start: start ? start.toISOString().slice(0, 10) : '',
+        end: end ? end.toISOString().slice(0, 10) : ''
+    };
+}
+
+function setActiveTimeBtn(range) {
+    document.querySelectorAll('.time-btn[data-range]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.range === range);
+    });
+}
+
+document.querySelectorAll('.time-btn[data-range]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const range = this.dataset.range;
+        currentRange = range;
+        setActiveTimeBtn(range);
+        const customRange = document.getElementById('time-custom-range');
+        if (range === 'custom') {
+            customRange.style.display = '';
+        } else {
+            customRange.style.display = 'none';
+            const dates = getDateRange(range);
+            document.getElementById('filter-start').value = dates.start;
+            document.getElementById('filter-end').value = dates.end;
+            loadCases(1);
+        }
+    });
+});
+
+document.getElementById('btn-confirm-date').addEventListener('click', function() {
+    currentRange = 'custom';
+    setActiveTimeBtn('custom');
+    loadCases(1);
+});
+
+document.getElementById('btn-refresh').addEventListener('click', function() {
+    loadCases(1);
+});
+
+function loadCategories() {
+    fetch(API + '/cases?page_size=1000')
+        .then(r => r.json())
+        .then(data => {
+            const cats = [...new Set(data.cases.map(c => c.category).filter(Boolean))];
+            const sel = document.getElementById('filter-category');
+            cats.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.textContent = cat;
+                sel.appendChild(opt);
+            });
+        });
+}
+
+function loadCases(page) {
+    const params = new URLSearchParams({page, page_size: 20});
+    const status = document.getElementById('filter-status').value;
+    const category = document.getElementById('filter-category').value;
+    const start = document.getElementById('filter-start').value;
+    const end = document.getElementById('filter-end').value;
+    if (status) params.set('status', status);
+    if (category) params.set('category', category);
+    if (start) params.set('start_date', start);
+    if (end) params.set('end_date', end);
+
+    fetch(API + '/cases?' + params)
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById('case-list');
+            tbody.innerHTML = data.cases.map(c => {
+                const annotateUrl = window.location.origin + '/annotate/' + c.case_id;
+                return `
+                <tr>
+                    <td>${c.case_id}</td>
+                    <td class="truncate" title="${c.source || ''}">${c.source || '-'}</td>
+                    <td>${c.category || '-'}</td>
+                    <td class="truncate" title="${c.description || ''}">${c.description || '-'}</td>
+                    <td><span class="badge badge-${c.status}">${c.status === 'pending' ? '待标注' : '已标注'}</span></td>
+                    <td>${c.created_at ? new Date(c.created_at).toLocaleString('zh-CN') : '-'}</td>
+                    <td><a href="${annotateUrl}" class="case-link" title="${annotateUrl}" onclick="event.preventDefault();navigator.clipboard.writeText('${annotateUrl}').then(()=>{this.textContent='✅ 已复制';setTimeout(()=>{this.textContent='${annotateUrl}'},1500)}).catch(()=>{this.textContent='${annotateUrl}'});">${annotateUrl}</a></td>
+                    <td><a href="/annotate/${c.case_id}" class="btn btn-sm">${c.status === 'pending' ? '去标注' : '查看'}</a></td>
+                </tr>
+                `;
+            }).join('');
+            renderPagination(data, page);
+        });
+}
+
+function renderPagination(data, current) {
+    const total = Math.ceil(data.total / data.page_size);
+    const el = document.getElementById('pagination');
+    if (total <= 1) { el.innerHTML = ''; return; }
+    let html = '';
+    for (let i = 1; i <= total; i++) {
+        html += `<button class="page-btn${i === current ? ' active' : ''}" onclick="loadCases(${i})">${i}</button>`;
+    }
+    el.innerHTML = html;
+}
+
+loadCategories();
+loadCases(1);
+</script>
+{% endblock %}

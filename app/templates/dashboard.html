@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}统计看板 - 标注平台{% endblock %}
+{% block content %}
+<h2>数据统计看板</h2>
+
+<div class="date-filter">
+    <input type="date" id="stats-start" placeholder="开始日期">
+    <input type="date" id="stats-end" placeholder="结束日期">
+    <button onclick="loadStats()">刷新</button>
+</div>
+
+<div class="dashboard-overview" id="overview-cards"></div>
+<div class="stats-cards" id="avg-cards"></div>
+
+<div class="card">
+    <h3>分类标注分布</h3>
+    <table class="data-table">
+        <thead>
+            <tr><th>分类</th><th>已标注</th><th>待标注</th><th>平均分</th></tr>
+        </thead>
+        <tbody id="category-table"></tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>低分 Case 列表</h3>
+    <div class="filter-row">
+        <label>阈值：</label>
+        <input type="number" id="low-threshold" value="1.0" step="0.1" min="0" max="2" onchange="loadStats()">
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr><th>Case ID</th><th>分类</th><th>整体分数</th><th>根因</th><th>操作</th></tr>
+        </thead>
+        <tbody id="low-score-table"></tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API = '/api/v1';
+
+function loadStats() {
+    const params = new URLSearchParams();
+    const start = document.getElementById('stats-start').value;
+    const end = document.getElementById('stats-end').value;
+    const threshold = document.getElementById('low-threshold').value;
+    if (start) params.set('start_date', start);
+    if (end) params.set('end_date', end);
+    params.set('low_score_threshold', threshold);
+
+    fetch(API + '/stats?' + params)
+        .then(r => r.json())
+        .then(data => {
+            const ov = data.overview;
+            document.getElementById('overview-cards').innerHTML = `
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${ov.total_cases}</div>
+                    <div class="dashboard-stat-label">总 Case 数</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${ov.annotated_cases}</div>
+                    <div class="dashboard-stat-label">已标注</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${ov.pending_cases}</div>
+                    <div class="dashboard-stat-label">待标注</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${(ov.annotation_rate * 100).toFixed(0)}%</div>
+                    <div class="dashboard-stat-label">标注完成率</div>
+                </div>
+            `;
+
+            const av = data.averages;
+            document.getElementById('avg-cards').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${av.accuracy}</div><div class="stat-label">平均准确度</div></div>
+                <div class="stat-card"><div class="stat-value">${av.operability}</div><div class="stat-label">平均可操作性</div></div>
+                <div class="stat-card"><div class="stat-value">${av.readability}</div><div class="stat-label">平均可读性</div></div>
+                <div class="stat-card"><div class="stat-value">${av.overall}</div><div class="stat-label">平均整体分数</div></div>
+            `;
+
+            document.getElementById('category-table').innerHTML = data.category_distribution.map(c => `
+                <tr>
+                    <td>${c.category}</td>
+                    <td>${c.annotated}</td>
+                    <td>${c.pending}</td>
+                    <td>${c.avg_overall}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('low-score-table').innerHTML = data.low_score_cases.map(c => `
+                <tr>
+                    <td>${c.case_id}</td>
+                    <td>${c.category || '-'}</td>
+                    <td>${c.overall_score}</td>
+                    <td class="truncate" title="${c.root_cause || ''}">${c.root_cause || '-'}</td>
+                    <td><a href="/annotate/${c.case_id}" class="btn btn-sm">查看</a></td>
+                </tr>
+            `).join('');
+        });
+}
+
+loadStats();
+</script>
+{% endblock %}

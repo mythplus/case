@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block title %}标注页面 - 标注平台{% endblock %}
+{% block content %}
+<h2>Case 标注</h2>
+
+<div class="annotate-layout">
+    <div class="annotate-left">
+        <div id="case-info" class="card">
+            <h3>Case 信息</h3>
+            <div id="case-detail" class="info-grid">加载中...</div>
+            <div class="annotate-link-section" id="annotate-link-section" style="display:none;">
+                <div class="info-grid annotate-link-row">
+                    <strong>企微链接：</strong>
+                    <div class="link-copy-wrap">
+                        <a id="annotate-link" class="annotate-link" href="#" target="_blank"></a>
+                        <button type="button" class="btn-copy-link" id="btn-copy-link" title="复制链接">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="annotate-right">
+        <div id="annotation-form" class="card">
+            <h3>标注内容</h3>
+            <form id="annotate-form">
+                <input type="hidden" id="case-id" value="{{ case_id }}">
+                <input type="hidden" id="updated-at" value="">
+
+                <div class="form-group">
+                    <label>问题根因 <span class="required">*</span></label>
+                    <textarea id="root-cause" rows="6" required placeholder="请输入问题根因"></textarea>
+                </div>
+
+                <div class="score-group">
+                    <div class="form-group">
+                        <label>准确度 <span class="required">*</span></label>
+                        <div class="score-selector" data-name="accuracy">
+                            <button type="button" class="score-btn" data-value="0">0<div class="score-label">不合格</div></button>
+                            <button type="button" class="score-btn" data-value="1">1<div class="score-label">合格</div></button>
+                            <button type="button" class="score-btn" data-value="2">2<div class="score-label">优秀</div></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>可操作性 <span class="required">*</span></label>
+                        <div class="score-selector" data-name="operability">
+                            <button type="button" class="score-btn" data-value="0">0<div class="score-label">不合格</div></button>
+                            <button type="button" class="score-btn" data-value="1">1<div class="score-label">合格</div></button>
+                            <button type="button" class="score-btn" data-value="2">2<div class="score-label">优秀</div></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>可读性 <span class="required">*</span></label>
+                        <div class="score-selector" data-name="readability">
+                            <button type="button" class="score-btn" data-value="0">0<div class="score-label">不合格</div></button>
+                            <button type="button" class="score-btn" data-value="1">1<div class="score-label">合格</div></button>
+                            <button type="button" class="score-btn" data-value="2">2<div class="score-label">优秀</div></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>整体分数</label>
+                    <div class="overall-score-wrap">
+                        <div id="overall-score" class="overall-score">-</div>
+                        <div class="overall-bar-bg">
+                            <div id="overall-bar" class="overall-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>优化方向</label>
+                    <div class="radio-group" id="optimization-direction-group">
+                        <label>
+                            <input type="radio" name="optimization_direction" value="optimize_output_format">
+                            优化Skill输出格式
+                        </label>
+                        <label>
+                            <input type="radio" name="optimization_direction" value="optimize_analysis_process">
+                            优化Skill分析过程
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="remark" rows="6" placeholder="描述准确度/方向/输出形式/优化建议等"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">提交标注</button>
+                <span id="submit-msg" class="msg"></span>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API = '/api/v1';
+const caseId = '{{ case_id }}';
+
+function loadCaseData() {
+    fetch(API + '/cases/' + caseId + '/annotation')
+        .then(r => {
+            if (r.status === 404) throw new Error('Case 不存在');
+            return r.json();
+        })
+        .then(data => {
+            const c = data.case;
+            document.getElementById('case-detail').innerHTML = `
+                <div><strong>来源：</strong>${c.source || '-'}</div>
+                <div><strong>分类：</strong>${c.category || '-'}</div>
+                <div><strong>描述：</strong>${c.description || '-'}</div>
+                <div><strong>运行时间：</strong>${c.run_time_ms != null ? c.run_time_ms + ' ms' : '-'}</div>
+                <div><strong>Tokens：</strong>${c.tokens_consumed != null ? c.tokens_consumed : '-'}</div>
+                <div class="full-width"><strong>Agent 输入：</strong><pre>${c.agent_input || '-'}</pre></div>
+                <div class="full-width"><strong>Agent 输出：</strong><pre>${c.agent_output || '-'}</pre></div>
+            `;
+            document.getElementById('updated-at').value = c.updated_at || '';
+
+            // 生成企微链接
+            const baseUrl = window.location.origin;
+            const annotateUrl = baseUrl + '/annotate/' + caseId;
+            const linkSection = document.getElementById('annotate-link-section');
+            const linkEl = document.getElementById('annotate-link');
+            linkEl.href = annotateUrl;
+            linkEl.textContent = annotateUrl;
+            linkSection.style.display = '';
+
+            if (data.annotation) {
+                document.getElementById('root-cause').value = data.annotation.root_cause || '';
+                document.getElementById('remark').value = data.annotation.remark || '';
+                setScore('accuracy', data.annotation.accuracy_score);
+                setScore('operability', data.annotation.operability_score);
+                setScore('readability', data.annotation.readability_score);
+                calcOverall();
+                // 回显优化方向
+                if (data.annotation.optimization_direction) {
+                    const radio = document.querySelector(`input[name="optimization_direction"][value="${data.annotation.optimization_direction}"]`);
+                    if (radio) radio.checked = true;
+                }
+            }
+        })
+        .catch(err => {
+            document.getElementById('case-detail').innerHTML = `<p class="error">${err.message}</p>`;
+        });
+}
+
+function setScore(name, val) {
+    const container = document.querySelector(`.score-selector[data-name="${name}"]`);
+    container.querySelectorAll('.score-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === String(val));
+    });
+}
+
+function getScoreVal(name) {
+    const container = document.querySelector(`.score-selector[data-name="${name}"]`);
+    const active = container.querySelector('.score-btn.active');
+    return active ? parseInt(active.dataset.value) : null;
+}
+
+function calcOverall() {
+    const a = getScoreVal('accuracy');
+    const o = getScoreVal('operability');
+    const r = getScoreVal('readability');
+    const el = document.getElementById('overall-score');
+    const bar = document.getElementById('overall-bar');
+    if (a !== null && o !== null && r !== null) {
+        const score = ((a + o + r) / 3).toFixed(2);
+        el.textContent = score;
+        const pct = (parseFloat(score) / 2 * 100);
+        bar.style.width = pct + '%';
+        bar.className = 'overall-bar ' + getBarClass(pct);
+    } else {
+        el.textContent = '-';
+        bar.style.width = '0%';
+        bar.className = 'overall-bar';
+    }
+}
+
+function getBarClass(pct) {
+    if (pct >= 75) return 'bar-good';
+    if (pct >= 40) return 'bar-ok';
+    return 'bar-bad';
+}
+
+document.querySelectorAll('.score-selector').forEach(selector => {
+    selector.addEventListener('click', function(e) {
+        const btn = e.target.closest('.score-btn');
+        if (!btn) return;
+        selector.querySelectorAll('.score-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        calcOverall();
+    });
+});
+
+document.getElementById('annotate-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const accuracy = getScoreVal('accuracy');
+    const operability = getScoreVal('operability');
+    const readability = getScoreVal('readability');
+    if (accuracy === null || operability === null || readability === null) {
+        document.getElementById('submit-msg').textContent = '请完成所有打分维度';
+        return;
+    }
+
+    const body = {
+        case_id: caseId,
+        root_cause: document.getElementById('root-cause').value,
+        accuracy_score: accuracy,
+        operability_score: operability,
+        readability_score: readability,
+        remark: document.getElementById('remark').value,
+        optimization_direction: document.querySelector('input[name="optimization_direction"]:checked')?.value || null,
+        updated_at: document.getElementById('updated-at').value,
+    };
+
+    fetch(API + '/annotations', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('submit-msg').textContent = data.error + (data.message ? ': ' + data.message : '');
+        } else {
+            document.getElementById('submit-msg').className = 'msg success';
+            document.getElementById('submit-msg').textContent = '提交成功！整体分数：' + data.overall_score;
+            loadCaseData();
+        }
+    })
+    .catch(() => {
+        document.getElementById('submit-msg').textContent = '提交失败，请重试';
+    });
+});
+
+// 企微链接一键复制
+document.getElementById('btn-copy-link').addEventListener('click', function() {
+    const linkEl = document.getElementById('annotate-link');
+    const url = linkEl.href;
+    navigator.clipboard.writeText(url).then(() => {
+        this.textContent = '✅';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋';
+            this.classList.remove('copied');
+        }, 1500);
+    }).catch(() => {
+        // fallback for older browsers
+        const tmp = document.createElement('textarea');
+        tmp.value = url;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        this.textContent = '✅';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋';
+            this.classList.remove('copied');
+        }, 1500);
+    });
+});
+
+loadCaseData();
+</script>
+{% endblock %}

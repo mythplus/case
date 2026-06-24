@@ -46,6 +46,7 @@ class Case(db.Model):
                 d["overall_score"] = self.annotation.overall_score
                 d["root_cause"] = self.annotation.root_cause
                 d["remark"] = self.annotation.remark
+                d["optimization_direction"] = self.annotation.optimization_direction
             return d
         d.update(
             {
@@ -87,7 +88,7 @@ class Annotation(db.Model):
             "overall_score": self.overall_score,
             "remark": self.remark,
             "optimization_direction": self.optimization_direction,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "annotated_at": self.created_at.isoformat() if self.created_at else None,
         }
 
 

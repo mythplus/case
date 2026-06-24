@@ -77,8 +77,9 @@ def export_data():
     writer.writerow([
         "case_id", "source", "category", "description", "status",
         "run_time_ms", "tokens_consumed", "agent_input", "agent_output",
+        "created_at", "updated_at",
         "annotation_id", "root_cause", "accuracy_score", "operability_score",
-        "readability_score", "overall_score", "remark", "annotated_at",
+        "readability_score", "overall_score", "remark", "optimization_direction", "annotated_at",
     ])
     if ids_param:
         for c in cases:
@@ -86,10 +87,13 @@ def export_data():
             writer.writerow([
                 c.case_id, c.source, c.category, c.description, c.status,
                 c.run_time_ms, c.tokens_consumed, c.agent_input, c.agent_output,
+                c.created_at.isoformat() if c.created_at else "",
+                c.updated_at.isoformat() if c.updated_at else "",
                 a.annotation_id if a else "", a.root_cause if a else "",
                 a.accuracy_score if a else "", a.operability_score if a else "",
                 a.readability_score if a else "", a.overall_score if a else "",
                 a.remark if a else "",
+                a.optimization_direction if a else "",
                 a.created_at.isoformat() if a and a.created_at else "",
             ])
     else:
@@ -98,8 +102,10 @@ def export_data():
             writer.writerow([
                 c.case_id, c.source, c.category, c.description, c.status,
                 c.run_time_ms, c.tokens_consumed, c.agent_input, c.agent_output,
+                c.created_at.isoformat() if c.created_at else "",
+                c.updated_at.isoformat() if c.updated_at else "",
                 a.annotation_id, a.root_cause, a.accuracy_score, a.operability_score,
-                a.readability_score, a.overall_score, a.remark,
+                a.readability_score, a.overall_score, a.remark, a.optimization_direction,
                 a.created_at.isoformat() if a.created_at else "",
             ])
     return Response(output.getvalue(), mimetype="text/csv; charset=utf-8-sig",

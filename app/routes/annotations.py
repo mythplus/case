@@ -54,7 +54,8 @@ def create_annotation():
         existing.overall_score = overall
         existing.remark = data.get("remark")
         existing.optimization_direction = data.get("optimization_direction")
-        existing.updated_at = datetime.now(timezone.utc)
+        existing.updated_at = datetime.now()
+        case.updated_at = datetime.now()
         db.session.commit()
         return jsonify({
             "annotation_id": existing.annotation_id,
@@ -75,6 +76,7 @@ def create_annotation():
     )
     db.session.add(annotation)
     case.status = "annotated"
+    case.updated_at = datetime.now()
     db.session.commit()
     return jsonify({
         "annotation_id": annotation.annotation_id,

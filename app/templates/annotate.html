@@ -14,20 +14,6 @@
         <div id="case-info" class="card">
             <h3>Case 信息</h3>
             <div id="case-detail" class="info-grid">加载中...</div>
-            <div class="annotate-link-section" id="annotate-link-section" style="display:none;">
-                <div class="info-grid annotate-link-row">
-                    <strong>链接：</strong>
-                    <div class="link-copy-wrap">
-                        <a id="annotate-link" class="annotate-link" href="#" target="_blank"></a>
-                        <button type="button" class="btn-copy-link" id="btn-copy-link" title="复制链接">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -104,6 +90,20 @@
 
                 <button type="submit" class="btn btn-primary">提交标注</button>
                 <span id="submit-msg" class="msg"></span>
+                <div class="annotate-link-section" id="annotate-link-section" style="display:none; margin-top: 12px;">
+                    <div class="annotate-link-row">
+                        <strong>链接：</strong>
+                        <div class="link-copy-wrap">
+                            <a id="annotate-link" class="annotate-link" href="#" target="_blank"></a>
+                            <button type="button" class="btn-copy-link" id="btn-copy-link" title="复制链接">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -114,6 +114,8 @@
 <script>
 const API = '/api/v1';
 const caseId = '{{ case_id }}';
+
+let isAnnotated = false;
 
 function loadCaseData() {
     fetch(API + '/cases/' + caseId + '/annotation')
@@ -145,6 +147,7 @@ function loadCaseData() {
             linkSection.style.display = '';
 
             if (data.annotation) {
+                isAnnotated = true;
                 document.getElementById('root-cause').value = data.annotation.root_cause || '';
                 document.getElementById('remark').value = data.annotation.remark || '';
                 setScore('accuracy', data.annotation.accuracy_score);
@@ -156,6 +159,7 @@ function loadCaseData() {
                     const radio = document.querySelector(`input[name="optimization_direction"][value="${data.annotation.optimization_direction}"]`);
                     if (radio) radio.checked = true;
                 }
+                document.querySelector('#annotate-form button[type="submit"]').textContent = '更新标注';
             }
         })
         .catch(err => {
@@ -243,7 +247,7 @@ document.getElementById('annotate-form').addEventListener('submit', function(e) 
             document.getElementById('submit-msg').textContent = data.error + (data.message ? ': ' + data.message : '');
         } else {
             document.getElementById('submit-msg').className = 'msg success';
-            document.getElementById('submit-msg').textContent = '提交成功！整体分数：' + data.overall_score;
+            document.getElementById('submit-msg').textContent = (isAnnotated ? '更新成功' : '提交成功') + '！整体分数：' + data.overall_score;
             loadCaseData();
         }
     })

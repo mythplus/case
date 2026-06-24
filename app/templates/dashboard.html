@@ -23,12 +23,14 @@
 
 <div class="card">
     <h3>分类标注分布</h3>
-    <table class="data-table">
-        <thead>
-            <tr><th>分类</th><th>已标注</th><th>待标注</th><th>平均分</th></tr>
-        </thead>
-        <tbody id="category-table"></tbody>
-    </table>
+    <div class="table-scroll-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr><th>分类</th><th>已标注</th><th>待标注</th><th>平均分</th></tr>
+            </thead>
+            <tbody id="category-table"></tbody>
+        </table>
+    </div>
 </div>
 
 <div class="card">
@@ -45,12 +47,14 @@
             <option value="2">2.00</option>
         </select>
     </div>
-    <table class="data-table">
-        <thead>
-            <tr><th>Case ID</th><th>分类</th><th>整体分数</th><th>根因</th><th>操作</th></tr>
-        </thead>
-        <tbody id="low-score-table"></tbody>
-    </table>
+    <div class="table-scroll-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr><th>Case ID</th><th>分类</th><th>整体分数</th><th>根因</th><th>操作</th></tr>
+            </thead>
+            <tbody id="low-score-table"></tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 
@@ -94,9 +98,10 @@ function setShortcutDate(days) {
     } else {
         start.setDate(start.getDate() - days);
     }
-    const fmt = d => d.toISOString().split('T')[0];
-    document.getElementById('stats-start').value = fmt(start);
-    document.getElementById('stats-end').value = fmt(end);
+    // date input 只接受 YYYY-MM-DD 格式，使用本地时间避免时区偏移
+    const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    document.getElementById('stats-start').value = fmtDate(start);
+    document.getElementById('stats-end').value = fmtDate(end);
     document.getElementById('time-custom-range').style.display = 'flex';
     currentRange = 'custom';
     document.querySelector('.time-btn[data-range="custom"]').classList.add('active');
@@ -129,8 +134,8 @@ function loadStats() {
     const start = document.getElementById('stats-start').value;
     const end = document.getElementById('stats-end').value;
     const threshold = document.getElementById('low-threshold').value;
-    if (start) params.set('start_date', start);
-    if (end) params.set('end_date', end);
+    if (start) params.set('start_date', start.includes('T') ? start : start + 'T00:00:00');
+    if (end) params.set('end_date', end.includes('T') ? end : end + 'T23:59:59');
     params.set('low_score_threshold', threshold);
 
     fetch(API + '/stats?' + params)

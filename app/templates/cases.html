@@ -140,14 +140,17 @@ function setShortcutDate(days) {
     } else {
         start.setDate(start.getDate() - days);
     }
-    const fmt = d => d.toISOString().split('T')[0];
-    document.getElementById('filter-start').value = fmt(start);
-    document.getElementById('filter-end').value = fmt(end);
+    // date input 只接受 YYYY-MM-DD 格式，使用本地时间避免时区偏移
+    const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    document.getElementById('filter-start').value = fmtDate(start);
+    document.getElementById('filter-end').value = fmtDate(end);
     currentRange = 'custom';
     setActiveTimeBtn('custom');
     document.querySelectorAll('.btn-shortcut').forEach(btn => btn.classList.remove('active'));
     const key = days === 0 ? 'btn-today' : days === 6 ? 'btn-7days' : 'btn-30days';
     document.getElementById(key).classList.add('active');
+    // 收起自定义时间面板
+    document.getElementById('time-custom-range').style.display = 'flex';
     loadCases(1);
 }
 
@@ -313,6 +316,7 @@ multiSelectBtn.addEventListener('click', function() {
         document.querySelectorAll('.td-checkbox').forEach(td => td.style.display = 'none');
         rowCheckboxes.forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
         multiSelectBtn.textContent = '多选';
+        updateMultiSelectCount();
     }
 });
 
@@ -365,8 +369,8 @@ function loadCases(page) {
     const end = document.getElementById('filter-end').value;
     if (status) params.set('status', status);
     if (category) params.set('category', category);
-    if (start) params.set('start_date', start);
-    if (end) params.set('end_date', end);
+    if (start) params.set('start_date', start.includes('T') ? start : start + 'T00:00:00');
+    if (end) params.set('end_date', end.includes('T') ? end : end + 'T23:59:59');
 
     fetch(API + '/cases?' + params)
         .then(r => r.json())
@@ -491,10 +495,6 @@ document.getElementById('filter-status').addEventListener('change', function() {
 });
 document.getElementById('filter-category').addEventListener('change', function() {
     loadCases(1);
-});
-
-document.getElementById('btn-refresh').addEventListener('click', function() {
-    window.location.reload();
 });
 
 loadCategories();

@@ -26,9 +26,19 @@ def export_data():
         category = request.args.get("category")
         keyword = request.args.get("keyword")
         if start_date:
-            q = q.filter(Annotation.created_at >= start_date)
+            from datetime import datetime
+            try:
+                start_dt = datetime.fromisoformat(start_date)
+                q = q.filter(Annotation.created_at >= start_dt)
+            except ValueError:
+                pass
         if end_date:
-            q = q.filter(Annotation.created_at <= end_date)
+            from datetime import datetime
+            try:
+                end_dt = datetime.fromisoformat(end_date)
+                q = q.filter(Annotation.created_at <= end_dt)
+            except ValueError:
+                pass
         if category:
             q = q.filter(Case.category == category)
         if keyword:
@@ -57,7 +67,8 @@ def export_data():
                 {"case": a.case.to_dict(), "annotation": a.to_dict()}
                 for a in rows
             ]
-        return Response(json.dumps(data, ensure_ascii=False, indent=2), mimetype="application/json")
+        return Response(json.dumps(data, ensure_ascii=False, indent=2), mimetype="application/json",
+                        headers={"Content-Disposition": "attachment; filename=export.json"})
 
     # CSV with UTF-8 BOM
     output = io.StringIO()
@@ -103,9 +114,19 @@ def stats():
 
     q = Case.query
     if start_date:
-        q = q.filter(Case.created_at >= start_date)
+        from datetime import datetime
+        try:
+            start_dt = datetime.fromisoformat(start_date)
+            q = q.filter(Case.created_at >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        q = q.filter(Case.created_at <= end_date)
+        from datetime import datetime
+        try:
+            end_dt = datetime.fromisoformat(end_date)
+            q = q.filter(Case.created_at <= end_dt)
+        except ValueError:
+            pass
     if category:
         q = q.filter(Case.category == category)
 

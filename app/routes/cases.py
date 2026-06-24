@@ -67,9 +67,19 @@ def list_cases():
     if category:
         q = q.filter(Case.category == category)
     if start_date:
-        q = q.filter(Case.created_at >= start_date)
+        from datetime import datetime
+        try:
+            start_dt = datetime.fromisoformat(start_date)
+            q = q.filter(Case.created_at >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        q = q.filter(Case.created_at <= end_date)
+        from datetime import datetime
+        try:
+            end_dt = datetime.fromisoformat(end_date)
+            q = q.filter(Case.created_at <= end_dt)
+        except ValueError:
+            pass
 
     col = getattr(Case, sort_by, Case.created_at)
     q = q.order_by(col.desc() if sort_order == "desc" else col.asc())

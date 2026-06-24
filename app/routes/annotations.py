@@ -46,6 +46,7 @@ def create_annotation():
     # 覆盖更新
     existing = Annotation.query.filter_by(case_id=data["case_id"]).first()
     if existing:
+        from datetime import datetime, timezone
         existing.root_cause = data["root_cause"]
         existing.accuracy_score = data["accuracy_score"]
         existing.operability_score = data["operability_score"]
@@ -53,6 +54,7 @@ def create_annotation():
         existing.overall_score = overall
         existing.remark = data.get("remark")
         existing.optimization_direction = data.get("optimization_direction")
+        existing.updated_at = datetime.now(timezone.utc)
         db.session.commit()
         return jsonify({
             "annotation_id": existing.annotation_id,
@@ -94,9 +96,19 @@ def list_annotations():
     q = Annotation.query.join(Case)
 
     if start_date:
-        q = q.filter(Annotation.created_at >= start_date)
+        from datetime import datetime
+        try:
+            start_dt = datetime.fromisoformat(start_date)
+            q = q.filter(Annotation.created_at >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        q = q.filter(Annotation.created_at <= end_date)
+        from datetime import datetime
+        try:
+            end_dt = datetime.fromisoformat(end_date)
+            q = q.filter(Annotation.created_at <= end_dt)
+        except ValueError:
+            pass
     if category:
         q = q.filter(Case.category == category)
     if case_status:

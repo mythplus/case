@@ -128,25 +128,6 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 
 .btn-primary { background: #4a6cf7; }
 
-/* 添加 Case 按钮 */
-.btn-add-case {
-    background: #4a6cf7;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-.btn-add-case:hover {
-    background: #3b5de6;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(74,108,247,0.3);
-}
-
 /* 复制链接按钮 */
 .btn-link-copy {
     padding: 2px 8px;
@@ -435,6 +416,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     z-index: 10;
     background: #fff;
     box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08);
+    border-right: none !important;
 }
 .action-cell::before {
     content: '';
@@ -459,6 +441,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     z-index: 11;
     background: #fafafa;
     box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08);
+    border-right: none !important;
 }
 .data-table th:last-child::before {
     content: '';
@@ -527,6 +510,27 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     padding: 24px;
     margin-bottom: 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 表格滚动容器 */
+.table-scroll-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 400px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+}
+
+.table-scroll-wrapper .data-table {
+    min-width: 100%;
+    border-radius: 0;
+}
+
+.table-scroll-wrapper .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fafafa;
 }
 
 .card h3 {
@@ -897,24 +901,19 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     left: 0;
     z-index: 5;
     background: #fff;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: 2px 0 0 0 #fff;
 }
 .th-checkbox {
     z-index: 12;
     background: #fafafa;
+    box-shadow: 2px 0 0 0 #fafafa;
 }
-.th-checkbox::after,
-.td-checkbox::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: #e8e8e8;
-    z-index: 13;
-}
+
 .data-table tr:hover .td-checkbox {
     background: #f5f7fa;
+    box-shadow: 2px 0 0 0 #f5f7fa;
 }
 
 .th-checkbox input, .td-checkbox input {

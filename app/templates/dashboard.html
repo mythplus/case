@@ -241,7 +241,7 @@ function loadWebhooks() {
             tbody.innerHTML = data.webhooks.map(w => `
                 <tr>
                     <td>${w.name}</td>
-                    <td class="truncate" style="max-width:400px;" title="${w.url}">${w.url}</td>
+                    <td title="${w.url}">${w.url}</td>
                     <td>
                         <label class="webhook-switch">
                             <input type="checkbox" ${w.enabled ? 'checked' : ''} onchange="toggleWebhook(${w.id}, this.checked)">

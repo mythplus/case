@@ -97,6 +97,17 @@ h2 {
     box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
 }
 
+#filter-category {
+    max-width: 150px;
+}
+
+#filter-category option {
+    max-width: 148px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 button, .btn {
     padding: 8px 20px;
     background: #4a6cf7;
@@ -196,6 +207,8 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 }
 
 .data-table tr:hover { background: #f5f7fa; }
+.data-table tr:hover .action-cell { background: #f5f7fa; box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08); }
+.data-table tr:hover .action-cell::before { background: #ccc; }
 
 .data-table td {
     color: #444;
@@ -417,11 +430,45 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 /* 操作列对齐 */
 .action-cell {
     white-space: nowrap;
+    position: sticky;
+    right: 0;
+    z-index: 10;
+    background: #fff;
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08);
+}
+.action-cell::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: transparent;
+    z-index: 12;
 }
 .action-btns {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+/* 冻结操作列表头 */
+.data-table th:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 11;
+    background: #fafafa;
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08);
+}
+.data-table th:last-child::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: transparent;
+    z-index: 13;
 }
 
 /* 状态和操作列不换行 */
@@ -435,7 +482,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 300px;
+    max-width: 200px;
 }
 
 .data-table td.truncate,
@@ -814,6 +861,69 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     align-items: center;
 }
 
+/* 多选按钮 */
+.btn-multi-select {
+    padding: 5px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: #fff;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-multi-select:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+
+.btn-multi-select.active {
+    background: #4a6cf7;
+    color: #fff;
+    border-color: #4a6cf7;
+}
+
+/* 选择框列 */
+.th-checkbox, .td-checkbox {
+    text-align: center;
+    vertical-align: middle;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: #fff;
+}
+.th-checkbox {
+    z-index: 12;
+    background: #fafafa;
+}
+.th-checkbox::after,
+.td-checkbox::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #e8e8e8;
+    z-index: 13;
+}
+.data-table tr:hover .td-checkbox {
+    background: #f5f7fa;
+}
+
+.th-checkbox input, .td-checkbox input {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #4a6cf7;
+}
+
 .time-btn {
     padding: 5px 14px;
     border: 1px solid #d9d9d9;
@@ -824,6 +934,10 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .time-btn:hover {
@@ -846,7 +960,6 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     cursor: pointer;
     font-size: 13px;
     transition: all 0.2s;
-    line-height: 1;
     white-space: nowrap;
     min-width: 32px;
     min-height: 28px;
@@ -858,6 +971,68 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 .time-btn-refresh:hover {
     background: #3656d8;
     border-color: #3656d8;
+}
+
+/* 批量操作按钮 */
+.export-wrapper {
+    position: relative;
+    display: inline-flex;
+}
+.btn-batch-action {
+    padding: 5px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: #f5f5f5;
+    color: #bbb;
+    font-size: 13px;
+    cursor: not-allowed;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-height: 28px;
+}
+.btn-batch-action:enabled {
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    border-color: #d9d9d9;
+}
+.btn-batch-action:enabled:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+.btn-batch-action.btn-batch-delete:enabled:hover {
+    border-color: #ff4d4f;
+    color: #ff4d4f;
+}
+.export-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 100;
+    min-width: 120px;
+    overflow: hidden;
+}
+.export-option {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.export-option:hover {
+    background: #f0f5ff;
+    color: #4a6cf7;
 }
 
 /* Case列表表头区域 */
@@ -1012,6 +1187,29 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     background: #3b5de6;
 }
 
+.btn-shortcut {
+    padding: 6px 14px;
+    background: #fff;
+    color: #555;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-shortcut:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+
+.btn-shortcut.active {
+    background: #4a6cf7;
+    color: #fff;
+    border-color: #4a6cf7;
+}
+
 .btn-cancel {
     padding: 6px 16px;
     background: #fff;
@@ -1060,6 +1258,11 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 8px 24px;
     font-size: 14px;
+}
+
+.info-grid > div {
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .info-grid .full-width {

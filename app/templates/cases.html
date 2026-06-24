@@ -11,14 +11,25 @@
         <option value="">全部分类</option>
     </select>
     <button type="button" class="time-btn" data-range="custom">自定义时间</button>
-    <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">刷新</button>
-    <button type="button" class="btn btn-add-case" id="btn-add-case" title="添加 Case">+ 添加 Case</button>
+    <button type="button" class="btn-multi-select" id="btn-multi-select">多选</button>
+    <span class="export-wrapper">
+        <button type="button" class="btn-batch-action btn-export" id="btn-export" disabled title="导出选中的数据">数据导出</button>
+        <div class="export-dropdown" id="export-dropdown">
+            <button type="button" class="export-option" data-format="csv">导出 CSV</button>
+            <button type="button" class="export-option" data-format="json">导出 JSON</button>
+        </div>
+    </span>
+    <button type="button" class="btn-batch-action btn-batch-delete" id="btn-batch-delete" disabled title="删除选中的数据">删除</button>
+    <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新" style="margin-left: auto;">刷新</button>
 </div>
 
 <div class="time-custom-range" id="time-custom-range">
     <input type="date" id="filter-start" class="date-input">
     <span class="date-sep">—</span>
     <input type="date" id="filter-end" class="date-input">
+    <button type="button" class="btn-shortcut" id="btn-today" data-range="today">今天</button>
+    <button type="button" class="btn-shortcut" id="btn-7days" data-range="7days">近7天</button>
+    <button type="button" class="btn-shortcut" id="btn-30days" data-range="30days">近30天</button>
     <button type="button" class="btn-confirm" id="btn-confirm-date">确认</button>
     <button type="button" class="btn-cancel" id="btn-cancel-date">取消</button>
 </div>
@@ -52,74 +63,24 @@
 </div>
 
 <!-- 添加 Case 模态框 -->
-<div class="modal-overlay" id="add-case-modal">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-            <h3 class="modal-title">添加 Case</h3>
-            <button class="modal-close" id="modal-add-close" type="button">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="add-case-form">
-                <div class="form-group">
-                    <label>Query <span class="required">*</span></label>
-                    <textarea id="add-query" rows="4" placeholder="Agent 输入内容" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Answer <span class="required">*</span></label>
-                    <textarea id="add-answer" rows="4" placeholder="Agent 输出内容" required></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>来源</label>
-                        <input type="text" id="add-source" placeholder="如：告警分析助手">
-                    </div>
-                    <div class="form-group">
-                        <label>分类</label>
-                        <input type="text" id="add-category" placeholder="如：内存告警">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>运行时间 (s)</label>
-                        <input type="number" id="add-runtime" value="0" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Token 消耗</label>
-                        <input type="number" id="add-tokens" value="0" min="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>描述</label>
-                    <textarea id="add-description" rows="2" placeholder="Case 描述"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>详细分析过程 (Markdown)</label>
-                    <textarea id="add-analysis" rows="5" placeholder="详细的分析过程，支持 Markdown 格式"></textarea>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" id="modal-add-cancel">取 消</button>
-            <button class="modal-btn modal-btn-confirm" id="modal-add-submit">提 交</button>
-        </div>
-    </div>
-</div>
 
 <table class="data-table">
     <thead>
         <tr>
+<th class="th-checkbox" style="width:4%;display:none"><input type="checkbox" id="select-all" style="display:none"></th>
             <th style="width:6%">Case ID</th>
-            <th style="width:14%">来源</th>
+            <th style="width:12%">来源</th>
             <th style="width:7%">分类</th>
-            <th style="width:12%">描述</th>
-            <th style="width:6%">状态</th>
-            <th style="width:6%">准确度</th>
-            <th style="width:7%">可操作性</th>
-            <th style="width:6%">可读性</th>
-            <th style="width:7%">整体分数</th>
-
+            <th style="width:10%">描述</th>
             <th style="width:9%">创建时间</th>
-            <th style="width:13%">操作</th>
+            <th style="width:5%">状态</th>
+            <th style="width:5%">准确度</th>
+            <th style="width:6%">可操作性</th>
+            <th style="width:5%">可读性</th>
+            <th style="width:6%">整体分数</th>
+            <th style="width:8%">问题根因</th>
+            <th style="width:8%">备注</th>
+<th style="width:8%">操作</th>
         </tr>
     </thead>
     <tbody id="case-list"></tbody>
@@ -170,10 +131,35 @@ document.getElementById('btn-confirm-date').addEventListener('click', function()
     loadCases(1);
 });
 
+// 快捷时间按钮
+function setShortcutDate(days) {
+    const end = new Date();
+    const start = new Date();
+    if (days === 0) {
+        start.setHours(0, 0, 0, 0);
+    } else {
+        start.setDate(start.getDate() - days);
+    }
+    const fmt = d => d.toISOString().split('T')[0];
+    document.getElementById('filter-start').value = fmt(start);
+    document.getElementById('filter-end').value = fmt(end);
+    currentRange = 'custom';
+    setActiveTimeBtn('custom');
+    document.querySelectorAll('.btn-shortcut').forEach(btn => btn.classList.remove('active'));
+    const key = days === 0 ? 'btn-today' : days === 6 ? 'btn-7days' : 'btn-30days';
+    document.getElementById(key).classList.add('active');
+    loadCases(1);
+}
+
+document.getElementById('btn-today').addEventListener('click', function() { setShortcutDate(0); });
+document.getElementById('btn-7days').addEventListener('click', function() { setShortcutDate(6); });
+document.getElementById('btn-30days').addEventListener('click', function() { setShortcutDate(29); });
+
 document.getElementById('btn-cancel-date').addEventListener('click', function() {
     document.getElementById('time-custom-range').style.display = 'none';
     document.getElementById('filter-start').value = '';
     document.getElementById('filter-end').value = '';
+    document.querySelectorAll('.btn-shortcut').forEach(btn => btn.classList.remove('active'));
     currentRange = '';
     setActiveTimeBtn('');
     loadCases(1);
@@ -183,73 +169,59 @@ document.getElementById('btn-refresh').addEventListener('click', function() {
     window.location.reload();
 });
 
-// 添加 Case 模态框逻辑
-const addModal = document.getElementById('add-case-modal');
+// 批量操作按钮逻辑
+const exportBtn = document.getElementById('btn-export');
+const exportDropdown = document.getElementById('export-dropdown');
+const batchDeleteBtn = document.getElementById('btn-batch-delete');
 
-document.getElementById('btn-add-case').addEventListener('click', function() {
-    addModal.classList.add('active');
+// 导出按钮点击：切换下拉菜单
+exportBtn.addEventListener('click', function(e) {
+    if (this.disabled) return;
+    e.stopPropagation();
+    exportDropdown.style.display = exportDropdown.style.display === 'block' ? 'none' : 'block';
 });
 
-document.getElementById('modal-add-close').addEventListener('click', closeAddModal);
-document.getElementById('modal-add-cancel').addEventListener('click', closeAddModal);
-addModal.addEventListener('click', function(e) {
-    if (e.target === this) closeAddModal();
+// 点击其他区域关闭下拉菜单
+document.addEventListener('click', function() {
+    exportDropdown.style.display = 'none';
 });
 
-function closeAddModal() {
-    addModal.classList.remove('active');
-    document.getElementById('add-case-form').reset();
-}
+// 选择导出格式
+document.querySelectorAll('.export-option').forEach(opt => {
+    opt.addEventListener('click', function() {
+        const selectedIds = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.dataset.id);
+        if (selectedIds.length === 0) return;
+        const fmt = this.dataset.format;
+        const params = new URLSearchParams({format: fmt});
+        params.set('ids', selectedIds.join(','));
+        const now = new Date();
+        const ts = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+const filename = `export_${ts}_${selectedIds.length}.${fmt}`;
+        fetch(API + '/export?' + params)
+            .then(r => r.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            })
+            .catch(() => alert('导出失败'));
+        exportDropdown.style.display = 'none';
+    });
+});
 
-document.getElementById('modal-add-submit').addEventListener('click', function() {
-    const query = document.getElementById('add-query').value.trim();
-    const answer = document.getElementById('add-answer').value.trim();
-    const source = document.getElementById('add-source').value.trim();
-    const category = document.getElementById('add-category').value.trim();
-    const runtime = parseFloat(document.getElementById('add-runtime').value) || 0;
-    const tokens = parseInt(document.getElementById('add-tokens').value) || 0;
-    const description = document.getElementById('add-description').value.trim();
-    const analysis = document.getElementById('add-analysis').value.trim();
-
-    if (!query) {
-        alert('请填写 Query');
-        return;
-    }
-    if (!answer) {
-        alert('请填写 Answer');
-        return;
-    }
-
-    // 组装 agent_output：Answer + 分析过程（如果有）
-    let agentOutput = answer;
-    if (analysis) {
-        agentOutput += '\n\n---\n\n' + analysis;
-    }
-
-    const payload = {
-        agent_input: query,
-        agent_output: agentOutput,
-        source: source || null,
-        category: category || null,
-        run_time_ms: Math.round(runtime * 1000),
-        tokens_consumed: tokens || null,
-        description: description || null,
-    };
-
-    fetch(API + '/cases', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(r => {
-        if (r.ok) {
-            closeAddModal();
-            loadCases(1);
-        } else {
-            r.json().then(data => alert(data.error || '添加失败')).catch(() => alert('添加失败'));
-        }
-    })
-    .catch(() => alert('网络错误'));
+// 批量删除选中的数据
+batchDeleteBtn.addEventListener('click', function() {
+    if (this.disabled) return;
+    const selectedIds = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.dataset.id);
+    if (selectedIds.length === 0) return;
+    deleteTargetId = '__batch__';
+    document.querySelector('#delete-modal .modal-title').textContent = `确定删除选中的 ${selectedIds.length} 条 Case?`;
+    document.getElementById('delete-modal').classList.add('active');
 });
 
 let currentPage = 1;
@@ -264,28 +236,107 @@ function deleteCase(caseId) {
 
 function closeDeleteModal() {
     document.getElementById('delete-modal').classList.remove('active');
+    document.querySelector('#delete-modal .modal-title').textContent = '确定删除此 Case?';
     deleteTargetId = null;
 }
 
 function confirmDelete() {
     if (!deleteTargetId) return;
-    const caseId = deleteTargetId;
-    closeDeleteModal();
-    fetch(API + '/cases/' + caseId, { method: 'DELETE' })
-        .then(r => {
-            if (r.ok) {
+    if (deleteTargetId === '__batch__') {
+        // 批量删除
+        const selectedIds = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.dataset.id);
+        closeDeleteModal();
+        Promise.all(selectedIds.map(id => fetch(API + '/cases/' + id, { method: 'DELETE' })))
+            .then(results => {
+                const failed = results.filter(r => !r.ok).length;
+                if (failed > 0) {
+                    alert(`${failed} 条删除失败`);
+                }
+                document.getElementById('select-all').checked = false;
                 loadCases(currentPage);
-            } else {
-                r.json().then(data => alert(data.error || '删除失败')).catch(() => alert('删除失败'));
-            }
-        })
-        .catch(() => alert('网络错误'));
+            })
+            .catch(() => alert('网络错误'));
+    } else {
+        // 单条删除
+        const caseId = deleteTargetId;
+        closeDeleteModal();
+        fetch(API + '/cases/' + caseId, { method: 'DELETE' })
+            .then(r => {
+                if (r.ok) {
+                    loadCases(currentPage);
+                } else {
+                    r.json().then(data => alert(data.error || '删除失败')).catch(() => alert('删除失败'));
+                }
+            })
+            .catch(() => alert('网络错误'));
+    }
 }
 
 document.getElementById('modal-cancel').addEventListener('click', closeDeleteModal);
 document.getElementById('modal-confirm').addEventListener('click', confirmDelete);
 document.getElementById('delete-modal').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
+});
+
+// 多选按钮逻辑
+const multiSelectBtn = document.getElementById('btn-multi-select');
+let isMultiSelectMode = false;
+
+function updateMultiSelectCount() {
+    const count = document.querySelectorAll('.row-checkbox:checked').length;
+    multiSelectBtn.textContent = count > 0 ? `多选(${count})` : '多选';
+    // 有选中数据时启用批量操作按钮，否则禁用
+    const hasSelected = count > 0;
+    exportBtn.disabled = !hasSelected;
+    batchDeleteBtn.disabled = !hasSelected;
+}
+
+multiSelectBtn.addEventListener('click', function() {
+    isMultiSelectMode = !isMultiSelectMode;
+    multiSelectBtn.classList.toggle('active', isMultiSelectMode);
+
+    const selectAll = document.getElementById('select-all');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+
+    if (isMultiSelectMode) {
+        // 显示选择框列
+        selectAll.style.display = '';
+        document.querySelector('.th-checkbox').style.display = '';
+        document.querySelectorAll('.td-checkbox').forEach(td => td.style.display = '');
+        rowCheckboxes.forEach(cb => cb.style.display = '');
+        multiSelectBtn.textContent = '多选(0)';
+    } else {
+        // 隐藏选择框列，取消全选
+        selectAll.checked = false;
+        selectAll.style.display = 'none';
+        document.querySelector('.th-checkbox').style.display = 'none';
+        document.querySelectorAll('.td-checkbox').forEach(td => td.style.display = 'none');
+        rowCheckboxes.forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+        multiSelectBtn.textContent = '多选';
+    }
+});
+
+// 全选/取消全选
+document.getElementById('select-all').addEventListener('change', function() {
+    const checked = this.checked;
+    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
+    updateMultiSelectCount();
+});
+
+// 监听行checkbox变化
+document.getElementById('case-list').addEventListener('change', function(e) {
+    if (e.target.classList.contains('row-checkbox')) {
+        // 如果有任何一个取消勾选，则全选也取消
+        if (!e.target.checked) {
+            document.getElementById('select-all').checked = false;
+        } else {
+            // 检查是否所有行都被选中
+            const allCheckboxes = document.querySelectorAll('.row-checkbox');
+            const allChecked = [...allCheckboxes].every(cb => cb.checked);
+            document.getElementById('select-all').checked = allChecked;
+        }
+        updateMultiSelectCount();
+    }
 });
 
 function loadCategories() {
@@ -297,7 +348,9 @@ function loadCategories() {
             sel.innerHTML = '<option value="">全部分类</option>';
             cats.forEach(cat => {
                 const opt = document.createElement('option');
-                opt.value = cat; opt.textContent = cat;
+                opt.value = cat;
+                opt.textContent = cat.length > 8 ? cat.substring(0, 8) + '…' : cat;
+                opt.title = cat;
                 sel.appendChild(opt);
             });
         });
@@ -329,23 +382,42 @@ function loadCases(page) {
                 };
                 return `
                 <tr>
+                    <td class="td-checkbox"><input type="checkbox" class="row-checkbox" data-id="${c.case_id}" style="display:none"></td>
                     <td><a href="/annotate/${c.case_id}" class="case-id-link">${c.case_id}</a></td>
 <td class="truncate" title="${c.source || ''}">${c.source || '-'}</td>
-                    <td>${c.category || '-'}</td>
+<td class="truncate" title="${c.category || ''}">${c.category || '-'}</td>
                     <td class="truncate" title="${c.description || ''}">${c.description || '-'}</td>
+                    <td>${c.created_at ? new Date(c.created_at).toLocaleString('zh-CN') : '-'}</td>
                     <td><span class="badge badge-${c.status}">${c.status === 'pending' ? '待标注' : '已标注'}</span></td>
                     <td>${scoreLabel(c.accuracy_score)}</td>
                     <td>${scoreLabel(c.operability_score)}</td>
                     <td>${scoreLabel(c.readability_score)}</td>
                     <td>${formatOverall(c.overall_score)}</td>
-
-                    <td>${c.created_at ? new Date(c.created_at).toLocaleString('zh-CN') : '-'}</td>
+                    <td class="truncate" title="${c.root_cause || ''}">${c.root_cause || '-'}</td>
+                    <td class="truncate" title="${c.remark || ''}">${c.remark || '-'}</td>
                     <td class="action-cell"><div class="action-btns"><a href="/annotate/${c.case_id}" class="btn btn-sm ${c.status === 'pending' ? 'btn-annotate' : 'btn-view'}">${c.status === 'pending' ? '去标注' : '查看'}</a><button class="btn btn-sm btn-delete" onclick="deleteCase('${c.case_id}')">删除</button></div></td>
                 </tr>
                 `;
             }).join('');
 
+            // 根据多选模式状态设置checkbox的可见性
+            const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+            const selectAll = document.getElementById('select-all');
+            if (isMultiSelectMode) {
+                selectAll.style.display = '';
+                document.querySelector('.th-checkbox').style.display = '';
+                document.querySelectorAll('.td-checkbox').forEach(td => td.style.display = '');
+                rowCheckboxes.forEach(cb => cb.style.display = '');
+            } else {
+                selectAll.style.display = 'none';
+                document.querySelector('.th-checkbox').style.display = 'none';
+                document.querySelectorAll('.td-checkbox').forEach(td => td.style.display = 'none');
+                rowCheckboxes.forEach(cb => { cb.style.display = 'none'; cb.checked = false; });
+                selectAll.checked = false;
+            }
 
+            // 多选模式下更新选中数量
+            updateMultiSelectCount();
 
             renderPagination(data, page);
         });

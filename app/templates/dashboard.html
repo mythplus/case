@@ -12,6 +12,9 @@
     <input type="date" id="stats-start" class="date-input">
     <span class="date-sep">—</span>
     <input type="date" id="stats-end" class="date-input">
+    <button type="button" class="btn-shortcut" id="btn-today" data-range="today">今天</button>
+    <button type="button" class="btn-shortcut" id="btn-7days" data-range="7days">近7天</button>
+    <button type="button" class="btn-shortcut" id="btn-30days" data-range="30days">近30天</button>
     <button type="button" class="btn-confirm" id="btn-confirm-date">确认</button>
     <button type="button" class="btn-cancel" id="btn-cancel-date">取消</button>
 </div>
@@ -82,10 +85,36 @@ document.getElementById('btn-confirm-date').addEventListener('click', function()
     loadStats();
 });
 
+// 快捷时间按钮
+function setShortcutDate(days) {
+    const end = new Date();
+    const start = new Date();
+    if (days === 0) {
+        start.setHours(0, 0, 0, 0);
+    } else {
+        start.setDate(start.getDate() - days);
+    }
+    const fmt = d => d.toISOString().split('T')[0];
+    document.getElementById('stats-start').value = fmt(start);
+    document.getElementById('stats-end').value = fmt(end);
+    document.getElementById('time-custom-range').style.display = 'flex';
+    currentRange = 'custom';
+    document.querySelector('.time-btn[data-range="custom"]').classList.add('active');
+    document.querySelectorAll('.btn-shortcut').forEach(btn => btn.classList.remove('active'));
+    const key = days === 0 ? 'btn-today' : days === 6 ? 'btn-7days' : 'btn-30days';
+    document.getElementById(key).classList.add('active');
+    loadStats();
+}
+
+document.getElementById('btn-today').addEventListener('click', function() { setShortcutDate(0); });
+document.getElementById('btn-7days').addEventListener('click', function() { setShortcutDate(6); });
+document.getElementById('btn-30days').addEventListener('click', function() { setShortcutDate(29); });
+
 document.getElementById('btn-cancel-date').addEventListener('click', function() {
     document.getElementById('time-custom-range').style.display = 'none';
     document.getElementById('stats-start').value = '';
     document.getElementById('stats-end').value = '';
+    document.querySelectorAll('.btn-shortcut').forEach(btn => btn.classList.remove('active'));
     currentRange = '';
     document.querySelector('.time-btn[data-range="custom"]').classList.remove('active');
     loadStats();
@@ -134,7 +163,7 @@ const avgOverall = data.averages && data.averages.overall ? data.averages.overal
 
             document.getElementById('category-table').innerHTML = data.category_distribution.map(c => `
                 <tr>
-                    <td>${c.category}</td>
+                    <td class="truncate">${c.category}</td>
                     <td>${c.annotated}</td>
                     <td>${c.pending}</td>
                     <td>${c.avg_overall}</td>
@@ -144,7 +173,7 @@ const avgOverall = data.averages && data.averages.overall ? data.averages.overal
             document.getElementById('low-score-table').innerHTML = data.low_score_cases.map(c => `
                 <tr>
                     <td>${c.case_id}</td>
-                    <td>${c.category || '-'}</td>
+                    <td class="truncate">${c.category || '-'}</td>
                     <td>${c.overall_score}</td>
                     <td class="truncate" title="${c.root_cause || ''}">${c.root_cause || '-'}</td>
                     <td><a href="/annotate/${c.case_id}" class="btn btn-sm">查看</a></td>

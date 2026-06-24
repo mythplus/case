@@ -44,6 +44,8 @@ class Case(db.Model):
                 d["operability_score"] = self.annotation.operability_score
                 d["readability_score"] = self.annotation.readability_score
                 d["overall_score"] = self.annotation.overall_score
+                d["root_cause"] = self.annotation.root_cause
+                d["remark"] = self.annotation.remark
             return d
         d.update(
             {

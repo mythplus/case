@@ -12,39 +12,51 @@ export_stats_bp = Blueprint("export_stats", __name__)
 @export_stats_bp.route("/export", methods=["GET"])
 def export_data():
     fmt = request.args.get("format", "csv")
-    q = Annotation.query.join(Case)
+    ids_param = request.args.get("ids")
 
-    # 复用标注查询的筛选逻辑
-    start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
-    category = request.args.get("category")
-    keyword = request.args.get("keyword")
-    if start_date:
-        q = q.filter(Annotation.created_at >= start_date)
-    if end_date:
-        q = q.filter(Annotation.created_at <= end_date)
-    if category:
-        q = q.filter(Case.category == category)
-    if keyword:
-        q = q.filter(db.or_(Case.description.contains(keyword), Case.agent_output.contains(keyword)))
+    if ids_param:
+        # 按选中的case ids导出（基于Case，左连Annotation）
+        ids = [i.strip() for i in ids_param.split(",") if i.strip()]
+        cases = Case.query.filter(Case.case_id.in_(ids)).all() if ids else []
+    else:
+        # 复用标注查询的筛选逻辑
+        q = Annotation.query.join(Case)
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        category = request.args.get("category")
+        keyword = request.args.get("keyword")
+        if start_date:
+            q = q.filter(Annotation.created_at >= start_date)
+        if end_date:
+            q = q.filter(Annotation.created_at <= end_date)
+        if category:
+            q = q.filter(Case.category == category)
+        if keyword:
+            q = q.filter(db.or_(Case.description.contains(keyword), Case.agent_output.contains(keyword)))
 
-    for dim in ["accuracy", "operability", "readability", "overall"]:
-        lo = request.args.get(f"{dim}_min", type=float)
-        hi = request.args.get(f"{dim}_max", type=float)
-        col = getattr(Annotation, f"{dim}_score", None)
-        if col is not None:
-            if lo is not None:
-                q = q.filter(col >= lo)
-            if hi is not None:
-                q = q.filter(col <= hi)
+        for dim in ["accuracy", "operability", "readability", "overall"]:
+            lo = request.args.get(f"{dim}_min", type=float)
+            hi = request.args.get(f"{dim}_max", type=float)
+            col = getattr(Annotation, f"{dim}_score", None)
+            if col is not None:
+                if lo is not None:
+                    q = q.filter(col >= lo)
+                if hi is not None:
+                    q = q.filter(col <= hi)
 
-    rows = q.all()
+        rows = q.all()
 
     if fmt == "json":
-        data = [
-            {"case": a.case.to_dict(), "annotation": a.to_dict()}
-            for a in rows
-        ]
+        if ids_param:
+            data = [
+                {"case": c.to_dict(), "annotation": c.annotation.to_dict() if c.annotation else None}
+                for c in cases
+            ]
+        else:
+            data = [
+                {"case": a.case.to_dict(), "annotation": a.to_dict()}
+                for a in rows
+            ]
         return Response(json.dumps(data, ensure_ascii=False, indent=2), mimetype="application/json")
 
     # CSV with UTF-8 BOM
@@ -57,15 +69,28 @@ def export_data():
         "annotation_id", "root_cause", "accuracy_score", "operability_score",
         "readability_score", "overall_score", "remark", "annotated_at",
     ])
-    for a in rows:
-        c = a.case
-        writer.writerow([
-            c.case_id, c.source, c.category, c.description, c.status,
-            c.run_time_ms, c.tokens_consumed, c.agent_input, c.agent_output,
-            a.annotation_id, a.root_cause, a.accuracy_score, a.operability_score,
-            a.readability_score, a.overall_score, a.remark,
-            a.created_at.isoformat() if a.created_at else "",
-        ])
+    if ids_param:
+        for c in cases:
+            a = c.annotation
+            writer.writerow([
+                c.case_id, c.source, c.category, c.description, c.status,
+                c.run_time_ms, c.tokens_consumed, c.agent_input, c.agent_output,
+                a.annotation_id if a else "", a.root_cause if a else "",
+                a.accuracy_score if a else "", a.operability_score if a else "",
+                a.readability_score if a else "", a.overall_score if a else "",
+                a.remark if a else "",
+                a.created_at.isoformat() if a and a.created_at else "",
+            ])
+    else:
+        for a in rows:
+            c = a.case
+            writer.writerow([
+                c.case_id, c.source, c.category, c.description, c.status,
+                c.run_time_ms, c.tokens_consumed, c.agent_input, c.agent_output,
+                a.annotation_id, a.root_cause, a.accuracy_score, a.operability_score,
+                a.readability_score, a.overall_score, a.remark,
+                a.created_at.isoformat() if a.created_at else "",
+            ])
     return Response(output.getvalue(), mimetype="text/csv; charset=utf-8-sig",
                     headers={"Content-Disposition": "attachment; filename=export.csv"})
 

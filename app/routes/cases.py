@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request
@@ -9,10 +10,19 @@ cases_bp = Blueprint("cases", __name__)
 
 def _gen_case_id():
     now = datetime.now()
-    count = Case.query.filter(
-        db.func.date(Case.created_at) == now.date()
-    ).count() + 1
-    return f"c_{now.strftime('%Y%m%d')}_{count:03d}"
+    prefix = f"c_{now.strftime('%Y%m%d')}_"
+    last = (
+        Case.query.filter(Case.case_id.startswith(prefix))
+        .order_by(Case.case_id.desc())
+        .first()
+    )
+    seq = 1
+    if last:
+        # case_id 格式: c_YYYYMMDD_NNN-xxxxx，取第三段下划线后的序号部分
+        seq_part = last.case_id.split("_")[2].split("-")[0]
+        seq = int(seq_part) + 1
+    suffix = uuid.uuid4().hex
+    return f"{prefix}{seq:03d}-{suffix[:4]}-{suffix[4:16]}"
 
 
 @cases_bp.route("", methods=["POST"])
@@ -40,6 +50,18 @@ def create_case():
     from flask import current_app
     base_url = current_app.config.get("BASE_URL", "http://localhost:5000")
     annotate_url = f"{base_url}/annotate/{case.case_id}"
+
+    # 异步推送企微通知
+    try:
+        from app.utils.wecom import notify_cases
+        notify_cases(
+            [{"case_id": case.case_id, "source": case.source,
+              "category": case.category, "annotate_url": annotate_url}],
+            current_app._get_current_object(),
+        )
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("企微通知发送失败")
 
     return jsonify({
         "case_id": case.case_id,

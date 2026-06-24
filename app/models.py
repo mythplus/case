@@ -89,3 +89,22 @@ class Annotation(db.Model):
             "optimization_direction": self.optimization_direction,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class WebhookConfig(db.Model):
+    __tablename__ = "webhook_configs"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(128), nullable=False, comment="Webhook名称")
+    url = db.Column(db.String(512), nullable=False, comment="企微Webhook地址")
+    enabled = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=_now)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "url": self.url,
+            "enabled": self.enabled,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

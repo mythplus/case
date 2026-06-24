@@ -1513,6 +1513,146 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 .quota-bar.full { background: #f56c6c; }
 .quota-bar.normal { background: #52c41a; }
 
+/* Webhook 管理区域 */
+/* 弹窗 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 80px;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+    background: #fff;
+    border-radius: 8px;
+    width: 680px;
+    max-width: 95vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #eee;
+}
+.modal-header h3 { margin: 0; font-size: 15px; }
+.modal-close {
+    background: none; border: none; font-size: 22px;
+    cursor: pointer; color: #999; line-height: 1;
+}
+.modal-close:hover { color: #333; }
+.modal-body { padding: 16px 20px 20px; }
+
+.webhook-form {
+    padding: 12px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 12px;
+}
+.webhook-form-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.webhook-input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid #d0d5dd;
+    border-radius: 4px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.webhook-input:focus { border-color: #4a6cf7; }
+.btn-webhook-cancel {
+    padding: 6px 16px;
+    background: #fff;
+    color: #666;
+    border: 1px solid #d0d5dd;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn-webhook-cancel:hover { background: #f5f5f5; }
+.btn-webhook-confirm {
+    padding: 6px 16px;
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn-webhook-confirm:hover { background: #3b5de6; }
+
+.webhook-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.btn-webhook-add {
+    padding: 6px 16px;
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-webhook-add:hover { background: #3b5de6; }
+
+.btn-webhook-test {
+    background: transparent;
+    color: #4a6cf7;
+    border: 1px solid #4a6cf7;
+}
+.btn-webhook-test:hover {
+    background: #4a6cf7;
+    color: #fff;
+}
+
+.webhook-empty {
+    text-align: center;
+    padding: 24px;
+    color: #999;
+    font-size: 13px;
+}
+
+/* Webhook 开关 */
+.webhook-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+}
+.webhook-switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc;
+    border-radius: 11px;
+    transition: background 0.2s;
+}
+.switch-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 2px; bottom: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+.webhook-switch input:checked + .switch-slider { background: #4a6cf7; }
+.webhook-switch input:checked + .switch-slider::before { transform: translateX(18px); }
+
 /* 滚动条美化 - 更醒目 */
 .table-scroll-area::-webkit-scrollbar { width: 10px; height: 10px; }
 .table-scroll-area::-webkit-scrollbar-thumb { background: #b0b0b0; border-radius: 5px; border: 2px solid #f0f0f0; }
@@ -1534,7 +1674,9 @@ html.dark body {
 /* 导航栏 - 深色模式下保持深色不变 */
 
 /* 标题 */
-html.dark h2 {
+html.dark h2,
+html.dark h3,
+html.dark .card h3 {
     color: #e6edf3;
 }
 
@@ -1984,6 +2126,34 @@ html.dark .case-id-link {
 html.dark .case-id-link:hover {
     color: #79c0ff;
 }
+
+html.dark .modal-box { background: #1c2128; }
+html.dark .modal-header { border-bottom-color: #30363d; }
+html.dark .modal-close { color: #8b949e; }
+html.dark .modal-close:hover { color: #c9d1d9; }
+html.dark .webhook-form { border-top-color: #30363d; border-bottom-color: #30363d; }
+html.dark .webhook-input { background: #0d1117; border-color: #30363d; color: #c9d1d9; }
+html.dark .webhook-input:focus { border-color: #4a6cf7; }
+html.dark .btn-webhook-cancel { background: #21262d; color: #c9d1d9; border-color: #30363d; }
+html.dark .btn-webhook-cancel:hover { background: #30363d; }
+
+html.dark .btn-webhook-add {
+    background: #4a6cf7;
+    color: #fff;
+}
+html.dark .btn-webhook-add:hover { background: #3656d8; }
+html.dark .btn-webhook-test {
+    background: transparent;
+    color: #58a6ff;
+    border-color: #58a6ff;
+}
+html.dark .btn-webhook-test:hover {
+    background: #58a6ff;
+    color: #0d1117;
+}
+html.dark .webhook-empty { color: #8b949e; }
+html.dark .switch-slider { background: #30363d; }
+html.dark .webhook-switch input:checked + .switch-slider { background: #4a6cf7; }
 
 /* 滚动条深色 */
 html.dark .table-scroll-area::-webkit-scrollbar-thumb {

@@ -17,7 +17,7 @@ def create_app():
         base_dir, "data", "annotation.db"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["BASE_URL"] = os.environ.get("BASE_URL", "http://localhost:5000")
+    app.config["BASE_URL"] = os.environ.get("BASE_URL", "http://21.6.116.26:5000")
 
     # 扩展初始化
     db.init_app(app)
@@ -30,10 +30,12 @@ def create_app():
     from app.routes.annotations import annotations_bp
     from app.routes.export_stats import export_stats_bp
     from app.routes.pages import pages_bp
+    from app.routes.webhooks import webhooks_bp
 
     app.register_blueprint(cases_bp, url_prefix="/api/v1/cases")
     app.register_blueprint(annotations_bp, url_prefix="/api/v1/annotations")
     app.register_blueprint(export_stats_bp, url_prefix="/api/v1")
+    app.register_blueprint(webhooks_bp, url_prefix="/api/v1/webhooks")
     app.register_blueprint(pages_bp)
 
     # 数据库初始化

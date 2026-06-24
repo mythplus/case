@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}统计看板 - 标注平台{% endblock %}
 {% block content %}
-<h2>数据统计看板</h2>
-
 <div class="filters">
     <button type="button" class="time-btn" data-range="custom">自定义时间</button>
+    <span style="flex:1"></span>
+    <button type="button" class="time-btn-refresh" id="btn-notify" title="通知设置">🔔 通知设置</button>
     <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新">刷新</button>
 </div>
 
@@ -54,6 +54,42 @@
             </thead>
             <tbody id="low-score-table"></tbody>
         </table>
+    </div>
+</div>
+
+<!-- 通知设置弹窗 -->
+<div class="modal-overlay" id="notify-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>通知设置</h3>
+            <button type="button" class="modal-close" id="btn-close-notify">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="webhook-toolbar">
+                <button type="button" class="btn-webhook-add" id="btn-add-webhook">+ 添加 Webhook</button>
+            </div>
+            <div class="webhook-form" id="webhook-form" style="display:none;">
+                <div class="webhook-form-row">
+                    <input type="text" id="webhook-name" class="webhook-input" placeholder="Webhook 名称">
+                </div>
+                <div class="webhook-form-row">
+                    <input type="text" id="webhook-url" class="webhook-input" placeholder="企微 Webhook 地址">
+                </div>
+                <div class="webhook-form-row" style="justify-content:flex-end;">
+                    <button type="button" class="btn-webhook-cancel" id="btn-cancel-webhook">取消</button>
+                    <button type="button" class="btn-webhook-confirm" id="btn-confirm-webhook">添加</button>
+                </div>
+            </div>
+            <div class="table-scroll-wrapper" style="max-height:300px;">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>名称</th><th>Webhook 地址</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody id="webhook-table"></tbody>
+                </table>
+            </div>
+            <div class="webhook-empty" id="webhook-empty" style="display:none;">暂无 Webhook 配置，点击上方按钮添加</div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -188,5 +224,115 @@ const avgOverall = data.averages && data.averages.overall ? data.averages.overal
 }
 
 loadStats();
+
+// ============ Webhook 管理 ============
+function loadWebhooks() {
+    fetch(API + '/webhooks')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById('webhook-table');
+            const empty = document.getElementById('webhook-empty');
+            if (!data.webhooks || data.webhooks.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            tbody.innerHTML = data.webhooks.map(w => `
+                <tr>
+                    <td>${w.name}</td>
+                    <td class="truncate" style="max-width:400px;" title="${w.url}">${w.url}</td>
+                    <td>
+                        <label class="webhook-switch">
+                            <input type="checkbox" ${w.enabled ? 'checked' : ''} onchange="toggleWebhook(${w.id}, this.checked)">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-sm btn-webhook-test" onclick="testWebhook(${w.id}, '${w.url}')">测试</button>
+                            <button class="btn btn-sm btn-delete" onclick="deleteWebhook(${w.id})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function toggleWebhook(id, enabled) {
+    fetch(API + '/webhooks/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({enabled: enabled})
+    }).then(r => r.json());
+}
+
+function deleteWebhook(id) {
+    if (!confirm('确定删除该 Webhook？')) return;
+    fetch(API + '/webhooks/' + id, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(() => loadWebhooks());
+}
+
+function testWebhook(id, url) {
+    const btn = event.target;
+    btn.textContent = '发送中...';
+    btn.disabled = true;
+    fetch(API + '/webhooks/test', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url: url})
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.success ? '✅ 测试消息发送成功' : '❌ ' + data.message);
+    })
+    .catch(() => alert('❌ 请求失败'))
+    .finally(() => {
+        btn.textContent = '测试';
+        btn.disabled = false;
+    });
+}
+
+document.getElementById('btn-add-webhook').addEventListener('click', function() {
+    document.getElementById('webhook-form').style.display = 'block';
+    document.getElementById('webhook-name').value = '';
+    document.getElementById('webhook-url').value = '';
+    document.getElementById('webhook-name').focus();
+});
+
+document.getElementById('btn-cancel-webhook').addEventListener('click', function() {
+    document.getElementById('webhook-form').style.display = 'none';
+});
+
+document.getElementById('btn-confirm-webhook').addEventListener('click', function() {
+    const name = document.getElementById('webhook-name').value.trim();
+    const url = document.getElementById('webhook-url').value.trim();
+    if (!name) { alert('请输入 Webhook 名称'); return; }
+    if (!url) { alert('请输入企微 Webhook 地址'); return; }
+    fetch(API + '/webhooks', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, url})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { alert('❌ ' + data.error); return; }
+        document.getElementById('webhook-form').style.display = 'none';
+        loadWebhooks();
+    });
+});
+
+// 通知设置弹窗
+document.getElementById('btn-notify').addEventListener('click', function() {
+    document.getElementById('notify-modal').classList.add('active');
+    loadWebhooks();
+});
+document.getElementById('btn-close-notify').addEventListener('click', function() {
+    document.getElementById('notify-modal').classList.remove('active');
+});
+document.getElementById('notify-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+});
 </script>
 {% endblock %}

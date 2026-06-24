@@ -50,6 +50,26 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
+/* 深色模式切换按钮 */
+.theme-toggle {
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    padding: 0;
+}
+.theme-toggle:hover {
+    background: rgba(255,255,255,0.18);
+}
+
 .container {
     max-width: 1600px;
     margin: 24px auto;
@@ -1501,3 +1521,478 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ========================
+   深色模式 Dark Theme
+   ======================== */
+
+html.dark body {
+    background: #0d1117;
+    color: #c9d1d9;
+}
+
+/* 导航栏 - 深色模式下保持深色不变 */
+
+/* 标题 */
+html.dark h2 {
+    color: #e6edf3;
+}
+
+/* 输入框 */
+html.dark .filters select, html.dark .filters input,
+html.dark .date-filter input,
+html.dark .filter-row input,
+html.dark .filter-row select,
+html.dark .date-input,
+html.dark .page-jump-input,
+html.dark .per-page-select select {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .filters select:focus, html.dark .filters input:focus,
+html.dark .date-filter input:focus,
+html.dark .filter-row input:focus,
+html.dark .filter-row select:focus,
+html.dark .date-input:focus,
+html.dark .page-jump-input:focus,
+html.dark .per-page-select select:focus {
+    border-color: #4a6cf7;
+    box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.25);
+}
+
+/* 按钮通用 */
+html.dark .btn-multi-select,
+html.dark .time-btn,
+html.dark .btn-cancel,
+html.dark .btn-shortcut {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .btn-multi-select:hover,
+html.dark .time-btn:hover,
+html.dark .btn-cancel:hover,
+html.dark .btn-shortcut:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+html.dark .btn-multi-select.active,
+html.dark .time-btn.active,
+html.dark .btn-shortcut.active {
+    background: #4a6cf7;
+    color: #fff;
+    border-color: #4a6cf7;
+}
+
+/* 刷新按钮 */
+html.dark .time-btn-refresh {
+    background: #4a6cf7;
+    border-color: #4a6cf7;
+    color: #fff;
+}
+html.dark .time-btn-refresh:hover {
+    background: #3656d8;
+    border-color: #3656d8;
+}
+
+/* 批量操作按钮 */
+html.dark .btn-batch-action {
+    background: #21262d;
+    border-color: #30363d;
+    color: #8b949e;
+}
+html.dark .btn-batch-action:enabled {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .btn-batch-action:enabled:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+html.dark .btn-batch-action.btn-batch-delete:enabled:hover {
+    border-color: #ff4d4f;
+    color: #ff4d4f;
+}
+
+/* 卡片 */
+html.dark .card,
+html.dark .table-wrapper,
+html.dark .stat-card,
+html.dark .quota-panel,
+html.dark .product-table,
+html.dark .detail-table {
+    background: #161b22;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 表格 */
+html.dark .data-table {
+    background: #161b22;
+}
+html.dark .data-table th, html.dark .data-table td {
+    border-bottom-color: #30363d;
+}
+html.dark .data-table th {
+    background: #21262d;
+    color: #e6edf3;
+    border-bottom-color: #30363d;
+}
+html.dark .data-table td {
+    color: #c9d1d9;
+}
+html.dark .data-table tr:hover {
+    background: #1c2128;
+}
+
+/* 分页区域 */
+html.dark .case-list-header,
+html.dark .pagination-info {
+    background: #21262d;
+    border-color: #30363d;
+}
+html.dark .case-list-title {
+    color: #e6edf3;
+}
+
+/* 操作列 */
+html.dark .action-cell {
+    background: #161b22;
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.3);
+}
+html.dark .data-table tr:hover .action-cell {
+    background: #1c2128;
+}
+html.dark .data-table th:last-child {
+    background: #21262d;
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 选择框列 */
+html.dark .th-checkbox, html.dark .td-checkbox {
+    background: #161b22;
+    box-shadow: 2px 0 0 0 #161b22;
+}
+html.dark .th-checkbox {
+    background: #21262d;
+    box-shadow: 2px 0 0 0 #21262d;
+}
+html.dark .data-table tr:hover .td-checkbox {
+    background: #1c2128;
+    box-shadow: 2px 0 0 0 #1c2128;
+}
+
+/* 状态标签 */
+html.dark .badge-pending {
+    background: #21262d;
+    color: #8b949e;
+    border-color: #30363d;
+}
+html.dark .badge-annotated {
+    background: #0d1b2a;
+    color: #58a6ff;
+    border-color: #1f6feb;
+}
+
+/* 评分标签 */
+html.dark .score-excellent {
+    background: #0d2818;
+    color: #3fb950;
+    border-color: #238636;
+}
+html.dark .score-pass {
+    background: #2a1f0d;
+    color: #d29922;
+    border-color: #9e6a03;
+}
+html.dark .score-fail {
+    background: #2d0f0f;
+    color: #f85149;
+    border-color: #da3633;
+}
+
+/* 时间筛选面板 */
+html.dark .time-custom-range {
+    background: #161b22;
+    border-color: #30363d;
+}
+html.dark .date-sep {
+    color: #8b949e;
+}
+
+/* 表格滚动容器 */
+html.dark .table-scroll-wrapper {
+    border-color: #30363d;
+}
+
+/* 模态框 */
+html.dark .modal-dialog {
+    background: #161b22;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+html.dark .modal-title {
+    color: #e6edf3;
+}
+html.dark .modal-message {
+    color: #8b949e;
+}
+html.dark .modal-btn-cancel {
+    background: #21262d;
+    color: #c9d1d9;
+}
+html.dark .modal-btn-cancel:hover {
+    background: #30363d;
+}
+html.dark .modal-close {
+    color: #8b949e;
+}
+html.dark .modal-close:hover {
+    background: #21262d;
+    color: #c9d1d9;
+}
+html.dark .modal-body label {
+    color: #e6edf3;
+}
+html.dark .modal-body input,
+html.dark .modal-body textarea {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .modal-body input::placeholder,
+html.dark .modal-body textarea::placeholder {
+    color: #6e7681;
+}
+
+/* 导出下拉菜单 */
+html.dark .export-dropdown {
+    background: #161b22;
+    border-color: #30363d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+html.dark .export-option {
+    color: #c9d1d9;
+}
+html.dark .export-option:hover {
+    background: #1c2128;
+    color: #58a6ff;
+}
+
+/* 分页按钮 */
+html.dark .page-btn,
+html.dark .page-btn-prev,
+html.dark .page-btn-next,
+html.dark .page-btn-jump {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .page-btn:hover,
+html.dark .page-btn-prev:hover,
+html.dark .page-btn-next:hover,
+html.dark .page-btn-jump:hover {
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+}
+html.dark .page-btn-prev:disabled,
+html.dark .page-btn-next:disabled {
+    color: #484f58;
+    border-color: #21262d;
+    background: #161b22;
+}
+html.dark .page-btn.active {
+    background: #4a6cf7;
+    color: #fff;
+    border-color: #4a6cf7;
+}
+
+/* Dashboard 统计卡片 */
+html.dark .dashboard-stat {
+    background: #161b22;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+html.dark .dashboard-stat-value {
+    color: #e6edf3;
+}
+html.dark .dashboard-stat-label {
+    color: #8b949e;
+}
+
+/* 统计卡片 */
+html.dark .stat-value {
+    color: #e6edf3;
+}
+html.dark .stat-label {
+    color: #8b949e;
+}
+
+/* 表单 */
+html.dark .form-group label {
+    color: #e6edf3;
+}
+html.dark .form-group textarea,
+html.dark .form-group input[type="text"] {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+
+/* 分数选择器 */
+html.dark .score-btn {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .score-btn:hover {
+    border-color: #58a6ff;
+    color: #58a6ff;
+}
+html.dark .score-btn.active {
+    background: #0d1b2a;
+    border-color: #58a6ff;
+    color: #58a6ff;
+}
+html.dark .score-btn[data-value="0"].active {
+    background: #2d0f0f;
+    border-color: #f85149;
+    color: #f85149;
+}
+html.dark .score-btn[data-value="1"].active {
+    background: #2a1f0d;
+    border-color: #d29922;
+    color: #d29922;
+}
+html.dark .score-btn[data-value="2"].active {
+    background: #0d2818;
+    border-color: #3fb950;
+    color: #3fb950;
+}
+
+/* 整体分数 */
+html.dark .overall-score {
+    color: #58a6ff;
+}
+html.dark .overall-formula {
+    color: #8b949e;
+}
+html.dark .overall-bar-bg {
+    background: #21262d;
+}
+
+/* 单选按钮组 */
+html.dark .radio-group label {
+    color: #c9d1d9;
+}
+
+/* info-grid */
+html.dark .info-grid strong {
+    color: #e6edf3;
+}
+html.dark .info-grid pre {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+
+/* 复制链接按钮 */
+html.dark .btn-copy-link {
+    background: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
+}
+html.dark .btn-copy-link:hover {
+    border-color: #58a6ff;
+    color: #58a6ff;
+    background: #0d1b2a;
+}
+html.dark .btn-copy-link.copied {
+    border-color: #3fb950;
+    color: #3fb950;
+    background: #0d2818;
+}
+
+/* 企微链接区块 */
+html.dark .annotate-link-section {
+    border-top-color: #30363d;
+}
+html.dark .annotate-link {
+    color: #58a6ff;
+}
+
+/* 按钮链接 */
+html.dark .btn-annotate {
+    background: transparent;
+    color: #58a6ff;
+    border-color: #58a6ff;
+}
+html.dark .btn-annotate:hover {
+    background: #58a6ff;
+    color: #0d1117;
+}
+html.dark .btn-view {
+    background: transparent;
+    color: #3fb950;
+    border-color: #3fb950;
+}
+html.dark .btn-view:hover {
+    background: #3fb950;
+    color: #0d1117;
+}
+html.dark .btn-delete {
+    background: transparent;
+    color: #f85149;
+    border-color: #f85149;
+}
+html.dark .btn-delete:hover {
+    background: #f85149;
+    color: #0d1117;
+}
+html.dark .btn-back {
+    background: transparent;
+    color: #58a6ff;
+    border-color: #58a6ff;
+}
+html.dark .btn-back:hover {
+    background: #58a6ff;
+    color: #0d1117;
+}
+html.dark .btn-link-copy {
+    background: #0d1b2a;
+    color: #58a6ff;
+    border-color: #1f6feb;
+}
+html.dark .btn-link-copy:hover {
+    background: #58a6ff;
+    color: #0d1117;
+}
+html.dark .btn-link-copy.copied {
+    background: #0d2818;
+    color: #3fb950;
+    border-color: #238636;
+}
+
+/* 限额条 */
+html.dark .quota-bar-bg {
+    background: #21262d;
+}
+
+/* Case ID 链接 */
+html.dark .case-id-link {
+    color: #58a6ff;
+}
+html.dark .case-id-link:hover {
+    color: #79c0ff;
+}
+
+/* 滚动条深色 */
+html.dark .table-scroll-area::-webkit-scrollbar-thumb {
+    background: #484f58;
+    border-color: #161b22;
+}
+html.dark .table-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #6e7681;
+}
+html.dark .table-scroll-area::-webkit-scrollbar-track {
+    background: #161b22;
+}

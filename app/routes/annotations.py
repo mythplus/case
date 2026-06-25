@@ -1,18 +1,16 @@
+import uuid
+from datetime import datetime
+
 from flask import Blueprint, jsonify, request
 
 from app.models import Annotation, Case, db
+from app.utils.audit import log_action
 
 annotations_bp = Blueprint("annotations", __name__)
 
 
 def _gen_annotation_id():
-    from datetime import datetime
-
-    now = datetime.now()
-    count = Annotation.query.filter(
-        db.func.date(Annotation.created_at) == now.date()
-    ).count() + 1
-    return f"a_{now.strftime('%Y%m%d')}_{count:03d}"
+    return str(uuid.uuid4())
 
 
 @annotations_bp.route("", methods=["POST"])
@@ -30,8 +28,6 @@ def create_annotation():
     # 乐观锁校验
     client_updated_at = data.get("updated_at")
     if client_updated_at and case.updated_at:
-        from datetime import datetime, timezone
-
         server_ts = case.updated_at.isoformat()
         if client_updated_at != server_ts:
             return jsonify({"error": "Conflict", "message": "Case has been modified by another user"}), 409
@@ -43,10 +39,9 @@ def create_annotation():
 
     overall = round(sum(scores) / 3, 2)
 
-    # 覆盖更新
+    # 覆盖更新或新建
     existing = Annotation.query.filter_by(case_id=data["case_id"]).first()
     if existing:
-        from datetime import datetime, timezone
         existing.root_cause = data["root_cause"]
         existing.accuracy_score = data["accuracy_score"]
         existing.operability_score = data["operability_score"]
@@ -56,6 +51,8 @@ def create_annotation():
         existing.optimization_direction = data.get("optimization_direction")
         case.updated_at = datetime.now()
         db.session.commit()
+        log_action("update_annotation", "annotation", existing.annotation_id,
+                   {"case_id": data["case_id"], "overall_score": overall})
         return jsonify({
             "annotation_id": existing.annotation_id,
             "overall_score": existing.overall_score,
@@ -77,6 +74,8 @@ def create_annotation():
     case.status = "annotated"
     case.updated_at = datetime.now()
     db.session.commit()
+    log_action("create_annotation", "annotation", annotation.annotation_id,
+               {"case_id": data["case_id"], "overall_score": overall})
     return jsonify({
         "annotation_id": annotation.annotation_id,
         "overall_score": annotation.overall_score,
@@ -97,14 +96,12 @@ def list_annotations():
     q = Annotation.query.join(Case)
 
     if start_date:
-        from datetime import datetime
         try:
             start_dt = datetime.fromisoformat(start_date)
             q = q.filter(Annotation.created_at >= start_dt)
         except ValueError:
             pass
     if end_date:
-        from datetime import datetime
         try:
             end_dt = datetime.fromisoformat(end_date)
             q = q.filter(Annotation.created_at <= end_dt)
@@ -166,6 +163,8 @@ def delete_annotation(annotation_id):
     db.session.delete(annotation)
     case.status = "pending"
     db.session.commit()
+    log_action("delete_annotation", "annotation", annotation_id,
+               {"case_id": case.case_id})
     return jsonify({
         "message": "Annotation deleted, case status reverted to pending",
         "annotation_id": annotation_id,

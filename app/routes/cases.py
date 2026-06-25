@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
@@ -9,20 +9,7 @@ cases_bp = Blueprint("cases", __name__)
 
 
 def _gen_case_id():
-    now = datetime.now()
-    prefix = f"c_{now.strftime('%Y%m%d')}_"
-    last = (
-        Case.query.filter(Case.case_id.startswith(prefix))
-        .order_by(Case.case_id.desc())
-        .first()
-    )
-    seq = 1
-    if last:
-        # case_id 格式: c_YYYYMMDD_NNN-xxxxx，取第三段下划线后的序号部分
-        seq_part = last.case_id.split("_")[2].split("-")[0]
-        seq = int(seq_part) + 1
-    suffix = uuid.uuid4().hex
-    return f"{prefix}{seq:03d}-{suffix[:4]}-{suffix[4:16]}"
+    return str(uuid.uuid4())
 
 
 @cases_bp.route("", methods=["POST"])
@@ -89,14 +76,12 @@ def list_cases():
     if category:
         q = q.filter(Case.category == category)
     if start_date:
-        from datetime import datetime
         try:
             start_dt = datetime.fromisoformat(start_date)
             q = q.filter(Case.created_at >= start_dt)
         except ValueError:
             pass
     if end_date:
-        from datetime import datetime
         try:
             end_dt = datetime.fromisoformat(end_date)
             q = q.filter(Case.created_at <= end_dt)
@@ -137,6 +122,9 @@ def delete_case(case_id):
         db.session.delete(case.annotation)
     db.session.delete(case)
     db.session.commit()
+    from app.utils.audit import log_action
+    log_action("delete_case", "case", case_id,
+               {"annotation_existed": case.annotation is not None})
     return jsonify({
         "message": "Case and associated annotations deleted",
         "case_id": case_id,

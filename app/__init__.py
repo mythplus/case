@@ -17,6 +17,7 @@ def create_app():
         base_dir, "data", "annotation.db"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
     app.config["BASE_URL"] = os.environ.get("BASE_URL", "http://21.6.116.26:5000")
 
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -42,6 +43,9 @@ def create_app():
     app.register_blueprint(export_stats_bp, url_prefix="/api/v1")
     app.register_blueprint(webhooks_bp, url_prefix="/api/v1/webhooks")
     app.register_blueprint(pages_bp)
+
+    from app.routes.audit_logs import audit_logs_bp
+    app.register_blueprint(audit_logs_bp, url_prefix="/api/v1/audit-logs")
 
     # 数据库初始化
     with app.app_context():

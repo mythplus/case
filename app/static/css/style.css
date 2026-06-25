@@ -1265,13 +1265,6 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     accent-color: #4a6cf7;
 }
 
-.overall-score {
-    font-size: 28px;
-    font-weight: 700;
-    color: #4a6cf7;
-    padding: 8px 0;
-}
-
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -1408,110 +1401,6 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     font-size: 14px;
     color: #888;
 }
-
-/* 产品使用汇总表格 - 参考图片的紧凑风格 */
-.product-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-
-.product-table th, .product-table td {
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 13px;
-}
-
-.product-table th {
-    background: #fafafa;
-    font-weight: 600;
-    color: #555;
-    font-size: 13px;
-}
-
-.product-table tr:hover { background: #f5f7fa; }
-
-/* 详细使用记录表格 */
-.detail-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    margin-top: 16px;
-}
-
-.detail-table th, .detail-table td {
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 13px;
-}
-
-.detail-table th {
-    background: #fafafa;
-    font-weight: 600;
-    color: #555;
-}
-
-.detail-table tr:hover { background: #f5f7fa; }
-
-/* 限额信息面板 */
-.quota-panel {
-    background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-
-.quota-panel h3 {
-    font-size: 16px;
-    margin-bottom: 16px;
-    color: #1a1a2e;
-    font-weight: 600;
-}
-
-.quota-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
-
-.quota-label {
-    color: #888;
-    font-size: 13px;
-}
-
-.quota-value {
-    color: #1a1a2e;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.quota-bar-bg {
-    flex: 1;
-    height: 8px;
-    background: #f0f0f0;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.quota-bar {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.3s;
-}
-
-.quota-bar.full { background: #f56c6c; }
-.quota-bar.normal { background: #52c41a; }
 
 /* Webhook 管理区域 */
 /* 弹窗 */
@@ -1761,10 +1650,7 @@ html.dark .btn-batch-action.btn-batch-delete:enabled:hover {
 /* 卡片 */
 html.dark .card,
 html.dark .table-wrapper,
-html.dark .stat-card,
-html.dark .quota-panel,
-html.dark .product-table,
-html.dark .detail-table {
+html.dark .stat-card {
     background: #161b22;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
@@ -2119,11 +2005,7 @@ html.dark .btn-link-copy.copied {
 }
 
 /* 限额条 */
-html.dark .quota-bar-bg {
-    background: #21262d;
-}
 
-/* Case ID 链接 */
 html.dark .case-id-link {
     color: #58a6ff;
 }

@@ -8,7 +8,7 @@
     <script>
         // 深色模式初始化
         (function() {
-            const theme = localStorage.getItem('theme') || 'dark';
+            const theme = localStorage.getItem('theme') || 'light';
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
             }
@@ -30,7 +30,6 @@
     <main class="container">
         {% block content %}{% endblock %}
     </main>
-    <script src="/static/js/app.js"></script>
     <script>
         // 深色模式切换
         (function() {

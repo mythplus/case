@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+from datetime import datetime
 
 from flask import Blueprint, jsonify, request, Response
 
@@ -26,14 +27,12 @@ def export_data():
         category = request.args.get("category")
         keyword = request.args.get("keyword")
         if start_date:
-            from datetime import datetime
             try:
                 start_dt = datetime.fromisoformat(start_date)
                 q = q.filter(Annotation.created_at >= start_dt)
             except ValueError:
                 pass
         if end_date:
-            from datetime import datetime
             try:
                 end_dt = datetime.fromisoformat(end_date)
                 q = q.filter(Annotation.created_at <= end_dt)
@@ -120,14 +119,12 @@ def stats():
 
     q = Case.query
     if start_date:
-        from datetime import datetime
         try:
             start_dt = datetime.fromisoformat(start_date)
             q = q.filter(Case.created_at >= start_dt)
         except ValueError:
             pass
     if end_date:
-        from datetime import datetime
         try:
             end_dt = datetime.fromisoformat(end_date)
             q = q.filter(Case.created_at <= end_dt)

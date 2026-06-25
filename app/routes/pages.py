@@ -17,3 +17,8 @@ def annotate(case_id):
 @pages_bp.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
+
+
+@pages_bp.route("/audit-logs")
+def audit_logs_page():
+    return render_template("audit_logs.html")

@@ -12,7 +12,7 @@ def _now():
 class Case(db.Model):
     __tablename__ = "cases"
 
-    case_id = db.Column(db.String(64), primary_key=True)
+    case_id = db.Column(db.String(36), primary_key=True)
     run_time_ms = db.Column(db.Integer, nullable=True)
     tokens_consumed = db.Column(db.Integer, nullable=True)
     source = db.Column(db.Text, nullable=True)
@@ -64,9 +64,9 @@ class Case(db.Model):
 class Annotation(db.Model):
     __tablename__ = "annotations"
 
-    annotation_id = db.Column(db.String(64), primary_key=True)
+    annotation_id = db.Column(db.String(36), primary_key=True)
     case_id = db.Column(
-        db.String(64), db.ForeignKey("cases.case_id"), nullable=False, unique=True
+        db.String(36), db.ForeignKey("cases.case_id"), nullable=False, unique=True
     )
     root_cause = db.Column(db.Text, nullable=False)
     accuracy_score = db.Column(db.Integer, nullable=False)
@@ -107,5 +107,26 @@ class WebhookConfig(db.Model):
             "name": self.name,
             "url": self.url,
             "enabled": self.enabled,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class AuditLog(db.Model):
+    __tablename__ = "audit_logs"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    action = db.Column(db.String(32), nullable=False, comment="操作类型: create_annotation/update_annotation/delete_annotation/delete_case/delete_webhook/create_webhook/update_webhook")
+    target_type = db.Column(db.String(32), nullable=False, comment="目标类型: case/annotation/webhook")
+    target_id = db.Column(db.String(128), nullable=True, comment="目标ID")
+    detail = db.Column(db.Text, nullable=True, comment="操作详情(JSON)")
+    created_at = db.Column(db.DateTime, nullable=False, default=_now)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "action": self.action,
+            "target_type": self.target_type,
+            "target_id": self.target_id,
+            "detail": self.detail,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }

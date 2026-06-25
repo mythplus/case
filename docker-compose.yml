@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    container_name: case-annotation-web
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - BASE_URL=${BASE_URL:-http://localhost:5000}
+      - FLASK_DEBUG=0
+    restart: unless-stopped
+    mem_limit: 768M
+    memswap_limit: 768M
+    cpus: "2.0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

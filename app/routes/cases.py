@@ -40,10 +40,10 @@ def create_case():
 
     # 异步推送企微通知
     try:
-        from app.utils.wecom import notify_cases
-        notify_cases(
-            [{"case_id": case.case_id, "source": case.source,
-              "category": case.category, "annotate_url": annotate_url}],
+        from app.utils.wecom import notify_case
+        notify_case(
+            {"case_id": case.case_id, "source": case.source,
+             "category": case.category, "annotate_url": annotate_url},
             current_app._get_current_object(),
         )
     except Exception:

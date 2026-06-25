@@ -1,6 +1,11 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 
 pages_bp = Blueprint("pages", __name__)
+
+
+@pages_bp.route("/healthz")
+def healthz():
+    return jsonify({"status": "ok"})
 
 
 @pages_bp.route("/")

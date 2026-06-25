@@ -71,7 +71,7 @@ body {
 }
 
 .container {
-    max-width: 1600px;
+    max-width: 2200px;
     margin: 24px auto;
     padding: 0 24px;
 }
@@ -485,7 +485,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 200px;
+    max-width: 300px;
 }
 
 .data-table td.truncate,

@@ -35,4 +35,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # 切换到非root用户
 USER appuser
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "run:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "--worker-class", "gthread", "--threads", "2", "run:app"]

@@ -22,7 +22,10 @@ def create_app():
 
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_pre_ping": True,
-        "connect_args": {"check_same_thread": False},
+        "connect_args": {
+            "check_same_thread": False,
+            "timeout": 5,  # SQLite busy_timeout 5秒，写冲突时等待重试
+        },
     }
 
     # 扩展初始化

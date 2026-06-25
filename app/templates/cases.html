@@ -189,7 +189,7 @@ document.addEventListener('click', function() {
     exportDropdown.style.display = 'none';
 });
 
-// 选择导出格式
+// 选择导出格式 — 异步导出
 document.querySelectorAll('.export-option').forEach(opt => {
     opt.addEventListener('click', function() {
         const selectedIds = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.dataset.id);
@@ -197,25 +197,53 @@ document.querySelectorAll('.export-option').forEach(opt => {
         const fmt = this.dataset.format;
         const params = new URLSearchParams({format: fmt});
         params.set('ids', selectedIds.join(','));
-        const now = new Date();
-        const ts = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
-const filename = `export_${ts}_${selectedIds.length}.${fmt}`;
-        fetch(API + '/export?' + params)
-            .then(r => r.blob())
-            .then(blob => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            })
-            .catch(() => alert('导出失败'));
+        exportBtn.disabled = true;
+        exportBtn.textContent = '导出中...';
         exportDropdown.style.display = 'none';
+
+        fetch(API + '/export?' + params)
+            .then(r => { if (r.status !== 202) throw new Error('提交失败'); return r.json(); })
+            .then(data => pollExport(data.task_id, fmt, selectedIds.length))
+            .catch(() => {
+                alert('导出失败');
+                exportBtn.disabled = false;
+                exportBtn.textContent = '数据导出';
+            });
     });
 });
+
+function pollExport(taskId, fmt, count) {
+    const poll = () => {
+        fetch(API + '/export/status/' + taskId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'done') {
+                    // 下载文件
+                    const a = document.createElement('a');
+                    a.href = API + '/export/download/' + taskId;
+                    a.download = `export.${fmt}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    exportBtn.disabled = false;
+                    exportBtn.textContent = '数据导出';
+                } else if (data.status === 'failed') {
+                    alert('导出失败: ' + (data.error || '未知错误'));
+                    exportBtn.disabled = false;
+                    exportBtn.textContent = '数据导出';
+                } else {
+                    // processing，继续轮询
+                    setTimeout(poll, 500);
+                }
+            })
+            .catch(() => {
+                alert('查询导出状态失败');
+                exportBtn.disabled = false;
+                exportBtn.textContent = '数据导出';
+            });
+    };
+    poll();
+}
 
 // 批量删除选中的数据
 batchDeleteBtn.addEventListener('click', function() {

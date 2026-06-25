@@ -19,6 +19,11 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["BASE_URL"] = os.environ.get("BASE_URL", "http://21.6.116.26:5000")
 
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "connect_args": {"check_same_thread": False},
+    }
+
     # 扩展初始化
     db.init_app(app)
     Migrate(app, db)
@@ -42,5 +47,8 @@ def create_app():
     with app.app_context():
         os.makedirs(os.path.join(base_dir, "data"), exist_ok=True)
         db.create_all()
+        # 启用 SQLite WAL 模式，避免并发写入时 database is locked
+        with db.engine.connect() as conn:
+            conn.execute(db.text("PRAGMA journal_mode=WAL"))
 
     return app

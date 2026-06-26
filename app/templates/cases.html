@@ -24,13 +24,13 @@
     <button type="button" class="time-btn" data-range="custom">自定义时间</button>
     <button type="button" class="btn-multi-select" id="btn-multi-select">多选</button>
     <span class="export-wrapper">
-        <button type="button" class="btn-batch-action btn-export" id="btn-export" disabled title="导出选中的数据">数据导出</button>
+        <button type="button" class="btn-batch-action btn-export" id="btn-export" disabled title="先多选要导出的数据">数据导出</button>
         <div class="export-dropdown" id="export-dropdown">
             <button type="button" class="export-option" data-format="csv">导出 CSV</button>
             <button type="button" class="export-option" data-format="json">导出 JSON</button>
         </div>
     </span>
-    <button type="button" class="btn-batch-action btn-batch-delete" id="btn-batch-delete" disabled title="删除选中的数据">删除</button>
+    <button type="button" class="btn-batch-action btn-batch-delete" id="btn-batch-delete" disabled title="先多选要删除的数据">删除</button>
     <button type="button" class="time-btn-refresh" id="btn-refresh" title="刷新" style="margin-left: auto;">刷新</button>
 </div>
 
@@ -330,7 +330,9 @@ function updateMultiSelectCount() {
     // 有选中数据时启用批量操作按钮，否则禁用
     const hasSelected = count > 0;
     exportBtn.disabled = !hasSelected;
+    exportBtn.title = hasSelected ? '导出选中的数据' : '先多选选中要导出的数据';
     batchDeleteBtn.disabled = !hasSelected;
+    batchDeleteBtn.title = hasSelected ? '删除选中的数据' : '先多选选中要删除的数据';
 }
 
 multiSelectBtn.addEventListener('click', function() {

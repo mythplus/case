@@ -155,28 +155,7 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 
 .btn-sm { padding: 4px 12px; font-size: 12px; }
 
-.btn-export {
-    padding: 6px 16px;
-    font-size: 13px;
-    height: 32px;
-    background: #4a6cf7;
-    color: #fff;
-    border: 1px solid #4a6cf7;
-    border-radius: 6px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-}
-.btn-export:hover {
-    background: #3656d8;
-    border-color: #3656d8;
-}
-.btn-export:disabled {
-    background: #b0b0b0;
-    border-color: #b0b0b0;
-    cursor: not-allowed;
-    color: #eee;
-}
+
 
 .btn-primary { background: #4a6cf7; }
 
@@ -1044,19 +1023,25 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
     white-space: nowrap;
     min-height: 28px;
 }
-.btn-batch-action:enabled {
-    background: #fff;
-    color: #555;
-    cursor: pointer;
-    border-color: #d9d9d9;
-}
-.btn-batch-action:enabled:hover {
+.btn-batch-action.btn-export:enabled {
+    background: #4a6cf7;
+    color: #fff;
     border-color: #4a6cf7;
-    color: #4a6cf7;
+    cursor: pointer;
+}
+.btn-batch-action.btn-export:enabled:hover {
+    background: #3656d8;
+    border-color: #3656d8;
+}
+.btn-batch-action.btn-batch-delete:enabled {
+    background: #ff4d4f;
+    color: #fff;
+    border-color: #ff4d4f;
+    cursor: pointer;
 }
 .btn-batch-action.btn-batch-delete:enabled:hover {
-    border-color: #ff4d4f;
-    color: #ff4d4f;
+    background: #d9363e;
+    border-color: #d9363e;
 }
 .export-dropdown {
     display: none;
@@ -1673,18 +1658,23 @@ html.dark .btn-batch-action {
     border-color: #30363d;
     color: #8b949e;
 }
-html.dark .btn-batch-action:enabled {
-    background: #21262d;
-    border-color: #30363d;
-    color: #c9d1d9;
-}
-html.dark .btn-batch-action:enabled:hover {
+html.dark .btn-batch-action.btn-export:enabled {
+    background: #4a6cf7;
+    color: #fff;
     border-color: #4a6cf7;
-    color: #4a6cf7;
+}
+html.dark .btn-batch-action.btn-export:enabled:hover {
+    background: #3656d8;
+    border-color: #3656d8;
+}
+html.dark .btn-batch-action.btn-batch-delete:enabled {
+    background: #ff4d4f;
+    color: #fff;
+    border-color: #ff4d4f;
 }
 html.dark .btn-batch-action.btn-batch-delete:enabled:hover {
-    border-color: #ff4d4f;
-    color: #ff4d4f;
+    background: #d9363e;
+    border-color: #d9363e;
 }
 
 /* 卡片 */

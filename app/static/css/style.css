@@ -103,9 +103,18 @@ h2 {
     transition: border-color 0.2s;
 }
 
+.filters .search-input {
+    width: 220px;
+    padding-left: 32px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat;
+    background-color: #fff;
+}
+
 .filter-row select {
-    min-width: 100px;
-    height: 36px;
+    min-width: 80px;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 12px;
 }
 
 .filters select:focus, .filters input:focus,
@@ -145,6 +154,29 @@ button, .btn {
 button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(74,108,247,0.3); }
 
 .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+.btn-export {
+    padding: 6px 16px;
+    font-size: 13px;
+    height: 32px;
+    background: #4a6cf7;
+    color: #fff;
+    border: 1px solid #4a6cf7;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.btn-export:hover {
+    background: #3656d8;
+    border-color: #3656d8;
+}
+.btn-export:disabled {
+    background: #b0b0b0;
+    border-color: #b0b0b0;
+    cursor: not-allowed;
+    color: #eee;
+}
 
 .btn-primary { background: #4a6cf7; }
 
@@ -996,6 +1028,9 @@ button:hover, .btn:hover { background: #3b5de6; transform: translateY(-1px); box
 .export-wrapper {
     position: relative;
     display: inline-flex;
+    align-items: center;
+    gap: 0;
+    margin-left: 8px;
 }
 .btn-batch-action {
     padding: 5px 14px;
@@ -1580,6 +1615,11 @@ html.dark .per-page-select select {
     background: #21262d;
     border-color: #30363d;
     color: #c9d1d9;
+}
+html.dark .filters .search-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center;
 }
 html.dark .filters select:focus, html.dark .filters input:focus,
 html.dark .date-filter input:focus,

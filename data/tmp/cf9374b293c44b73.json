@@ -1,0 +1,56 @@
+[
+  {
+    "case": {
+      "case_id": "c_20260623_011",
+      "status": "annotated",
+      "category": "运维排障",
+      "created_at": "2026-06-23T08:44:01.172692",
+      "updated_at": "2026-06-24T09:35:36.707884",
+      "run_time_ms": 4500,
+      "tokens_consumed": 710,
+      "source": "监控告警平台",
+      "description": "服务器CPU异常排查",
+      "agent_input": "服务器CPU使用率持续超过90%，请排查原因",
+      "agent_output": "排查结果：1. 定时任务集中执行导致CPU峰值；2. 存在未优化的慢SQL查询；3. 日志写入未做异步处理。建议：错开定时任务时间、优化SQL、日志异步化。"
+    },
+    "annotation": {
+      "annotation_id": "a_20260624_001",
+      "case_id": "c_20260623_011",
+      "root_cause": "额度达到",
+      "accuracy_score": 1,
+      "operability_score": 0,
+      "readability_score": 1,
+      "overall_score": 0.67,
+      "remark": "顶顶顶顶",
+      "optimization_direction": "optimize_output_format",
+      "annotated_at": "2026-06-24T09:35:36.708897"
+    }
+  },
+  {
+    "case": {
+      "case_id": "c_20260623_012",
+      "status": "annotated",
+      "category": "文本翻译",
+      "created_at": "2026-06-23T08:44:05.405466",
+      "updated_at": "2026-06-24T09:43:02.592056",
+      "run_time_ms": 1800,
+      "tokens_consumed": 390,
+      "source": "文档翻译工具",
+      "description": "技术文档翻译",
+      "agent_input": "请将以下英文技术文档翻译为中文：Microservices Architecture Guide",
+      "agent_output": "微服务架构指南：本文档介绍了微服务架构的核心概念，包括服务拆分原则、通信机制（同步与异步）、数据一致性策略、服务发现与负载均衡、容错与熔断机制等。适用于中大型分布式系统设计参考。"
+    },
+    "annotation": {
+      "annotation_id": "a_20260624_003",
+      "case_id": "c_20260623_012",
+      "root_cause": "额丰富",
+      "accuracy_score": 0,
+      "operability_score": 1,
+      "readability_score": 1,
+      "overall_score": 0.67,
+      "remark": "而    额我都反反复复",
+      "optimization_direction": null,
+      "annotated_at": "2026-06-24T09:43:02.592353"
+    }
+  }
+]

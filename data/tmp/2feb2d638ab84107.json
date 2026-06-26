@@ -1,0 +1,83 @@
+[
+  {
+    "case": {
+      "case_id": "c_20260623_008",
+      "status": "annotated",
+      "category": "性能优化",
+      "created_at": "2026-06-23T08:43:21.836119",
+      "updated_at": "2026-06-26T11:47:27.476750",
+      "run_time_ms": 3200,
+      "tokens_consumed": 450,
+      "source": "用户反馈系统",
+      "description": "登录页性能问题",
+      "agent_input": "用户反馈登录页面加载缓慢，请分析原因",
+      "agent_output": "经过分析，登录页面加载缓慢的主要原因是：1. 首屏资源过大，未做代码分割；2. 图片未压缩；3. 接口响应时间过长。建议进行优化。"
+    },
+    "annotation": {
+      "annotation_id": "1ea93b91-f309-4327-862a-e758537f0400",
+      "case_id": "c_20260623_008",
+      "root_cause": "1",
+      "accuracy_score": 0,
+      "operability_score": 1,
+      "readability_score": 0,
+      "overall_score": 0.33,
+      "remark": "1",
+      "optimization_direction": null,
+      "annotated_at": "2026-06-26T11:47:27.477305"
+    }
+  },
+  {
+    "case": {
+      "case_id": "c_20260623_009",
+      "status": "annotated",
+      "category": "数据分析",
+      "created_at": "2026-06-23T08:43:30.654111",
+      "updated_at": "2026-06-26T11:47:20.556785",
+      "run_time_ms": 5100,
+      "tokens_consumed": 680,
+      "source": "数据分析平台",
+      "description": "Q3销售报告生成",
+      "agent_input": "请生成一份2024年Q3销售数据分析报告",
+      "agent_output": "2024年Q3销售数据报告：总销售额同比增长15%，其中线上渠道增长22%，线下渠道增长8%。华东区域贡献最大，占比35%。建议加大线上投入。"
+    },
+    "annotation": {
+      "annotation_id": "f4030939-3409-44ad-9bb0-caa70804cfa7",
+      "case_id": "c_20260623_009",
+      "root_cause": "1",
+      "accuracy_score": 0,
+      "operability_score": 1,
+      "readability_score": 0,
+      "overall_score": 0.33,
+      "remark": "",
+      "optimization_direction": null,
+      "annotated_at": "2026-06-26T11:47:20.557670"
+    }
+  },
+  {
+    "case": {
+      "case_id": "c_20260623_010",
+      "status": "annotated",
+      "category": "用户体验",
+      "created_at": "2026-06-23T08:43:57.364417",
+      "updated_at": "2026-06-26T11:47:12.421970",
+      "run_time_ms": 2800,
+      "tokens_consumed": 520,
+      "source": "客户服务系统",
+      "description": "退货流程优化",
+      "agent_input": "客户投诉退货流程复杂，请优化退货指引",
+      "agent_output": "退货流程优化建议：1. 简化退货申请步骤，从5步缩减为3步；2. 增加一键退货功能；3. 优化退货状态查询页面；4. 添加退货进度实时推送通知。"
+    },
+    "annotation": {
+      "annotation_id": "59c98517-c715-4d5c-88e7-d23df2f89538",
+      "case_id": "c_20260623_010",
+      "root_cause": "1",
+      "accuracy_score": 1,
+      "operability_score": 0,
+      "readability_score": 0,
+      "overall_score": 0.33,
+      "remark": "",
+      "optimization_direction": null,
+      "annotated_at": "2026-06-26T11:47:12.424703"
+    }
+  }
+]

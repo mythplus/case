@@ -33,30 +33,6 @@
     </div>
 </div>
 
-<div class="card">
-    <h3>低分 Case 列表</h3>
-    <div class="filter-row">
-        <label>阈值：</label>
-        <select id="low-threshold" onchange="loadStats()">
-            <option value="0">0</option>
-            <option value="0.33">0.33</option>
-            <option value="0.67">0.67</option>
-            <option value="1" selected>1.00</option>
-            <option value="1.33">1.33</option>
-            <option value="1.67">1.67</option>
-            <option value="2">2.00</option>
-        </select>
-    </div>
-    <div class="table-scroll-wrapper">
-        <table class="data-table">
-            <thead>
-                <tr><th>Case ID</th><th>分类</th><th>整体分数</th><th>根因</th><th>操作</th></tr>
-            </thead>
-            <tbody id="low-score-table"></tbody>
-        </table>
-    </div>
-</div>
-
 <!-- 通知设置弹窗 -->
 <div class="modal-overlay" id="notify-modal">
     <div class="modal-box">
@@ -169,10 +145,8 @@ function loadStats() {
     const params = new URLSearchParams();
     const start = document.getElementById('stats-start').value;
     const end = document.getElementById('stats-end').value;
-    const threshold = document.getElementById('low-threshold').value;
     if (start) params.set('start_date', start.includes('T') ? start : start + 'T00:00:00');
     if (end) params.set('end_date', end.includes('T') ? end : end + 'T23:59:59');
-    params.set('low_score_threshold', threshold);
 
     fetch(API + '/stats?' + params)
         .then(r => r.json())
@@ -208,16 +182,6 @@ const avgOverall = data.averages && data.averages.overall ? data.averages.overal
                     <td>${c.annotated}</td>
                     <td>${c.pending}</td>
                     <td>${c.avg_overall}</td>
-                </tr>
-            `).join('');
-
-            document.getElementById('low-score-table').innerHTML = data.low_score_cases.map(c => `
-                <tr>
-                    <td>${c.case_id}</td>
-                    <td class="truncate">${c.category || '-'}</td>
-                    <td>${c.overall_score}</td>
-                    <td class="truncate" title="${c.root_cause || ''}">${c.root_cause || '-'}</td>
-                    <td><a href="/annotate/${c.case_id}" class="btn btn-sm">查看</a></td>
                 </tr>
             `).join('');
         });

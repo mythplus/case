@@ -2,6 +2,7 @@
 {% block title %}Case 列表 - 标注平台{% endblock %}
 {% block content %}
 <div class="filters">
+    <input type="text" id="search-keyword" class="search-input" placeholder="搜索关键词..." title="搜索描述、来源、输出内容等">
     <select id="filter-status">
         <option value="">全部状态</option>
         <option value="pending">待标注</option>
@@ -9,6 +10,16 @@
     </select>
     <select id="filter-category">
         <option value="">全部分类</option>
+    </select>
+    <select id="filter-score">
+        <option value="">全部分数</option>
+        <option value="0">0</option>
+        <option value="0.33">0.33</option>
+        <option value="0.67">0.67</option>
+        <option value="1">1.00</option>
+        <option value="1.33">1.33</option>
+        <option value="1.67">1.67</option>
+        <option value="2">2.00</option>
     </select>
     <button type="button" class="time-btn" data-range="custom">自定义时间</button>
     <button type="button" class="btn-multi-select" id="btn-multi-select">多选</button>
@@ -393,10 +404,14 @@ function loadCases(page) {
     const params = new URLSearchParams({page, page_size: currentPageSize});
     const status = document.getElementById('filter-status').value;
     const category = document.getElementById('filter-category').value;
+    const score = document.getElementById('filter-score').value;
+    const keyword = document.getElementById('search-keyword').value.trim();
     const start = document.getElementById('filter-start').value;
     const end = document.getElementById('filter-end').value;
     if (status) params.set('status', status);
     if (category) params.set('category', category);
+    if (score) params.set('score', score);
+    if (keyword) params.set('keyword', keyword);
     if (start) params.set('start_date', start.includes('T') ? start : start + 'T00:00:00');
     if (end) params.set('end_date', end.includes('T') ? end : end + 'T23:59:59');
 
@@ -523,6 +538,16 @@ document.getElementById('filter-status').addEventListener('change', function() {
 });
 document.getElementById('filter-category').addEventListener('change', function() {
     loadCases(1);
+});
+document.getElementById('filter-score').addEventListener('change', function() {
+    loadCases(1);
+});
+
+// 搜索框防抖
+let _searchTimer = null;
+document.getElementById('search-keyword').addEventListener('input', function() {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => loadCases(1), 400);
 });
 
 loadCategories();

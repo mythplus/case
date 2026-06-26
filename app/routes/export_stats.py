@@ -49,7 +49,20 @@ def _build_query(args):
     if category:
         q = q.filter(Case.category == category)
     if keyword:
-        q = q.filter(db.or_(Case.description.contains(keyword), Case.agent_output.contains(keyword)))
+        # FTS5 trigram 全文搜索：>=3 字符走 MATCH（极快），否则走原始 LIKE 兜底
+        if len(keyword) >= 3:
+            try:
+                fts_ids = [
+                    r[0] for r in db.session.execute(
+                        db.text("SELECT case_id FROM cases_fts WHERE cases_fts MATCH :kw"),
+                        {"kw": keyword},
+                    )
+                ]
+                q = q.filter(Case.case_id.in_(fts_ids))
+            except Exception:
+                q = q.filter(db.or_(Case.description.contains(keyword), Case.agent_output.contains(keyword)))
+        else:
+            q = q.filter(db.or_(Case.description.contains(keyword), Case.agent_output.contains(keyword)))
 
     for dim in ["accuracy", "operability", "readability", "overall"]:
         lo_raw = args.get(f"{dim}_min")
@@ -62,6 +75,13 @@ def _build_query(args):
                 q = q.filter(col >= lo)
             if hi is not None:
                 q = q.filter(col <= hi)
+    low_score_threshold = args.get("low_score_threshold")
+    if low_score_threshold is not None:
+        try:
+            threshold_val = float(low_score_threshold)
+            q = q.filter(Annotation.overall_score == threshold_val)
+        except ValueError:
+            pass
     return "filter", q
 
 
@@ -262,7 +282,7 @@ def stats():
             "root_cause": c.annotation.root_cause,
         }
         for c in annotated
-        if c.annotation and c.annotation.overall_score < threshold
+        if c.annotation and c.annotation.overall_score == threshold
     ]
 
     return jsonify({

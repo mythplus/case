@@ -57,5 +57,41 @@ def create_app():
         # 启用 SQLite WAL 模式，避免并发写入时 database is locked
         with db.engine.connect() as conn:
             conn.execute(db.text("PRAGMA journal_mode=WAL"))
+            # FTS5 全文索引（trigram tokenizer，支持中英文子串匹配）
+            # content= 模式：FTS 不存独立数据，由触发器同步 + rebuild 保证一致性
+            conn.execute(db.text(
+                "CREATE VIRTUAL TABLE IF NOT EXISTS cases_fts USING fts5("
+                "case_id, description, agent_output, source, "
+                "content=cases, content_rowid=rowid, tokenize='trigram')"
+            ))
+            # 触发器：INSERT 同步
+            conn.execute(db.text(
+                "CREATE TRIGGER IF NOT EXISTS cases_fts_ai AFTER INSERT ON cases BEGIN"
+                " INSERT INTO cases_fts(rowid,case_id,description,agent_output,source)"
+                " VALUES(new.rowid,new.case_id,new.description,new.agent_output,new.source);"
+                " END"
+            ))
+            # 触发器：DELETE 同步
+            conn.execute(db.text(
+                "CREATE TRIGGER IF NOT EXISTS cases_fts_ad AFTER DELETE ON cases BEGIN"
+                " INSERT INTO cases_fts(cases_fts,rowid,case_id,description,agent_output,source)"
+                " VALUES('delete',old.rowid,old.case_id,old.description,old.agent_output,old.source);"
+                " END"
+            ))
+            # 触发器：UPDATE 同步（先删旧再插新）
+            conn.execute(db.text(
+                "CREATE TRIGGER IF NOT EXISTS cases_fts_au AFTER UPDATE ON cases BEGIN"
+                " INSERT INTO cases_fts(cases_fts,rowid,case_id,description,agent_output,source)"
+                " VALUES('delete',old.rowid,old.case_id,old.description,old.agent_output,old.source);"
+                " INSERT INTO cases_fts(rowid,case_id,description,agent_output,source)"
+                " VALUES(new.rowid,new.case_id,new.description,new.agent_output,new.source);"
+                " END"
+            ))
+            # 首次升级或索引不一致时全量重建
+            fts_cnt = conn.execute(db.text("SELECT count(*) FROM cases_fts")).scalar()
+            case_cnt = conn.execute(db.text("SELECT count(*) FROM cases")).scalar()
+            if case_cnt > 0 and fts_cnt != case_cnt:
+                conn.execute(db.text("INSERT INTO cases_fts(cases_fts) VALUES('rebuild')"))
+            conn.commit()
 
     return app

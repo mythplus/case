@@ -112,13 +112,32 @@ def list_annotations():
     if case_status:
         q = q.filter(Case.status == case_status)
     if keyword:
-        q = q.filter(
-            db.or_(
-                Case.description.contains(keyword),
-                Case.agent_output.contains(keyword),
-                Annotation.optimization_direction.contains(keyword),
+        # FTS5 trigram 全文搜索：>=3 字符走 MATCH（极快），否则走原始 LIKE 兜底
+        if len(keyword) >= 3:
+            try:
+                fts_ids = [
+                    r[0] for r in db.session.execute(
+                        db.text("SELECT case_id FROM cases_fts WHERE cases_fts MATCH :kw"),
+                        {"kw": keyword},
+                    )
+                ]
+                q = q.filter(Case.case_id.in_(fts_ids))
+            except Exception:
+                q = q.filter(
+                    db.or_(
+                        Case.description.contains(keyword),
+                        Case.agent_output.contains(keyword),
+                        Annotation.optimization_direction.contains(keyword),
+                    )
+                )
+        else:
+            q = q.filter(
+                db.or_(
+                    Case.description.contains(keyword),
+                    Case.agent_output.contains(keyword),
+                    Annotation.optimization_direction.contains(keyword),
+                )
             )
-        )
 
     # 分数区间筛选
     for dim in ["accuracy", "operability", "readability", "overall"]:

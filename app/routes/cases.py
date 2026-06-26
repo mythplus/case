@@ -3,7 +3,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from app.models import Case, db
+from app.models import Annotation, Case, db
 
 cases_bp = Blueprint("cases", __name__)
 
@@ -62,6 +62,8 @@ def create_case():
 def list_cases():
     status = request.args.get("status")
     category = request.args.get("category")
+    score = request.args.get("score", type=float)
+    keyword = request.args.get("keyword")
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
     sort_by = request.args.get("sort_by", "created_at")
@@ -75,6 +77,34 @@ def list_cases():
         q = q.filter(Case.status == status)
     if category:
         q = q.filter(Case.category == category)
+    if score is not None:
+        q = q.filter(Case.annotation.has(Annotation.overall_score == score))
+    if keyword:
+        # FTS5 trigram 全文搜索：>=3 字符走 MATCH（极快），否则走原始 LIKE 兜底
+        if len(keyword) >= 3:
+            try:
+                fts_ids = [
+                    r[0] for r in db.session.execute(
+                        db.text("SELECT case_id FROM cases_fts WHERE cases_fts MATCH :kw"),
+                        {"kw": keyword},
+                    )
+                ]
+                q = q.filter(Case.case_id.in_(fts_ids))
+            except Exception:
+                # FTS5 MATCH 语法异常时回退 LIKE
+                q = q.filter(db.or_(
+                    Case.description.contains(keyword),
+                    Case.agent_output.contains(keyword),
+                    Case.source.contains(keyword),
+                    Case.case_id.contains(keyword),
+                ))
+        else:
+            q = q.filter(db.or_(
+                Case.description.contains(keyword),
+                Case.agent_output.contains(keyword),
+                Case.source.contains(keyword),
+                Case.case_id.contains(keyword),
+            ))
     if start_date:
         try:
             start_dt = datetime.fromisoformat(start_date)

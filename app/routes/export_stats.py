@@ -112,7 +112,6 @@ def _generate_file(app, task_id, fmt, args_snapshot):
             else:
                 # CSV
                 output = io.StringIO()
-                output.write("\ufeff")
                 writer = csv.writer(output)
                 writer.writerow([
                     "case_id", "source", "category", "description", "status",

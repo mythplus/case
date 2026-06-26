@@ -115,6 +115,14 @@
 const API = '/api/v1';
 const caseId = '{{ case_id }}';
 
+// HTML 转义，防止 XSS
+function esc(str) {
+    if (str == null) return '';
+    const d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+}
+
 let isAnnotated = false;
 
 function loadCaseData() {
@@ -126,14 +134,14 @@ function loadCaseData() {
         .then(data => {
             const c = data.case;
             document.getElementById('case-detail').innerHTML = `
-                <div><strong>Case ID：</strong>${c.case_id || caseId}</div>
-                <div><strong>来源：</strong>${c.source || '-'}</div>
-                <div><strong>分类：</strong>${c.category || '-'}</div>
-                <div><strong>描述：</strong>${c.description || '-'}</div>
-                <div><strong>运行时间：</strong>${c.run_time_ms != null ? c.run_time_ms + ' ms' : '-'}</div>
-                <div><strong>Tokens：</strong>${c.tokens_consumed != null ? c.tokens_consumed : '-'}</div>
-                <div class="full-width"><strong>Agent 输入：</strong><pre>${c.agent_input || '-'}</pre></div>
-                <div class="full-width"><strong>Agent 输出：</strong><pre>${c.agent_output || '-'}</pre></div>
+                <div><strong>Case ID：</strong>${esc(c.case_id) || esc(caseId)}</div>
+                <div><strong>来源：</strong>${esc(c.source) || '-'}</div>
+                <div><strong>分类：</strong>${esc(c.category) || '-'}</div>
+                <div><strong>描述：</strong>${esc(c.description) || '-'}</div>
+                <div><strong>运行时间：</strong>${c.run_time_ms != null ? esc(c.run_time_ms) + ' ms' : '-'}</div>
+                <div><strong>Tokens：</strong>${c.tokens_consumed != null ? esc(c.tokens_consumed) : '-'}</div>
+                <div class="full-width"><strong>Agent 输入：</strong><pre>${esc(c.agent_input) || '-'}</pre></div>
+                <div class="full-width"><strong>Agent 输出：</strong><pre>${esc(c.agent_output) || '-'}</pre></div>
             `;
             document.getElementById('updated-at').value = c.updated_at || '';
 

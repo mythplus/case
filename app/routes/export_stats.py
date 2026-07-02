@@ -89,6 +89,7 @@ def _generate_file(app, task_id, fmt, args_snapshot):
     """后台线程：生成导出文件"""
     tmp_dir = _get_tmp_dir(app)
     filepath = os.path.join(tmp_dir, f"{task_id}.{fmt}")
+    row_count = 0
 
     try:
         with app.app_context():
@@ -109,6 +110,7 @@ def _generate_file(app, task_id, fmt, args_snapshot):
                     ]
                 with open(filepath, "w", encoding="utf-8") as f:
                     json.dump(data, f, ensure_ascii=False, indent=2)
+                row_count = len(data)
             else:
                 # CSV
                 output = io.StringIO()
@@ -122,6 +124,7 @@ def _generate_file(app, task_id, fmt, args_snapshot):
                 ])
                 if mode == "ids":
                     cases = Case.query.filter(Case.case_id.in_(query_obj)).all() if query_obj else []
+                    row_count = len(cases)
                     for c in cases:
                         a = c.annotation
                         writer.writerow([
@@ -138,6 +141,7 @@ def _generate_file(app, task_id, fmt, args_snapshot):
                         ])
                 else:
                     rows = query_obj.all()
+                    row_count = len(rows)
                     for a in rows:
                         c = a.case
                         writer.writerow([
@@ -155,6 +159,7 @@ def _generate_file(app, task_id, fmt, args_snapshot):
         with _export_lock:
             _export_tasks[task_id]["status"] = "done"
             _export_tasks[task_id]["filename"] = filepath
+            _export_tasks[task_id]["count"] = row_count
     except Exception as e:
         with _export_lock:
             _export_tasks[task_id]["status"] = "failed"
@@ -208,9 +213,11 @@ def export_download(task_id):
         return jsonify({"error": "文件已过期"}), 404
 
     fmt = task["format"]
+    count = task.get("count", 0)
     mimetype = "application/json" if fmt == "json" else "text/csv; charset=utf-8-sig"
     ext = fmt
-    download_name = f"export.{ext}"
+    date_tag = datetime.now().strftime("%Y%m%d")
+    download_name = f"export_{date_tag}_{count}.{ext}"
 
     return send_file(filepath, mimetype=mimetype, as_attachment=True, download_name=download_name)
 
@@ -249,26 +256,26 @@ def stats():
             vals = [getattr(a, f"{key}_score") for a in ann_scores]
             averages[key] = round(sum(vals) / len(vals), 2)
 
-    # 分类分布
-    cat_map = {}
+    # 来源分布
+    src_map = {}
     for c in all_cases:
-        cat = c.category or "未分类"
-        if cat not in cat_map:
-            cat_map[cat] = {"annotated": 0, "pending": 0, "scores": []}
+        src = c.source or "未指定"
+        if src not in src_map:
+            src_map[src] = {"annotated": 0, "pending": 0, "scores": []}
         if c.status == "annotated" and c.annotation:
-            cat_map[cat]["annotated"] += 1
-            cat_map[cat]["scores"].append(c.annotation.overall_score)
+            src_map[src]["annotated"] += 1
+            src_map[src]["scores"].append(c.annotation.overall_score)
         else:
-            cat_map[cat]["pending"] += 1
+            src_map[src]["pending"] += 1
 
     category_distribution = [
         {
-            "category": cat,
+            "category": src,
             "annotated": v["annotated"],
             "pending": v["pending"],
             "avg_overall": round(sum(v["scores"]) / len(v["scores"]), 2) if v["scores"] else 0,
         }
-        for cat, v in cat_map.items()
+        for src, v in src_map.items()
     ]
 
     # 低分 Case

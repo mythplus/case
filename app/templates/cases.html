@@ -9,7 +9,7 @@
         <option value="annotated">已标注</option>
     </select>
     <select id="filter-category">
-        <option value="">全部分类</option>
+        <option value="">全部来源</option>
     </select>
     <select id="filter-score">
         <option value="">全部分数</option>
@@ -83,6 +83,7 @@
             <th style="width:12%">来源</th>
             <th style="width:7%">分类</th>
             <th style="width:10%">描述</th>
+            <th style="width:8%">详细分析</th>
             <th style="width:8%">创建时间</th>
             <th style="width:5%">状态</th>
             <th style="width:5%">准确度</th>
@@ -91,7 +92,6 @@
             <th style="width:6%">整体分数</th>
             <th style="width:10%">问题根因</th>
             <th style="width:10%">备注</th>
-            <th style="width:8%">详细分析</th>
 <th style="width:8%">操作</th>
         </tr>
     </thead>
@@ -393,18 +393,18 @@ document.getElementById('case-list').addEventListener('change', function(e) {
     }
 });
 
-function loadCategories() {
+function loadSources() {
     fetch(API + '/cases?page_size=1000')
         .then(r => r.json())
         .then(data => {
-            const cats = [...new Set(data.cases.map(c => c.category).filter(Boolean))];
+            const sources = [...new Set(data.cases.map(c => c.source).filter(Boolean))];
             const sel = document.getElementById('filter-category');
-            sel.innerHTML = '<option value="">全部分类</option>';
-            cats.forEach(cat => {
+            sel.innerHTML = '<option value="">全部来源</option>';
+            sources.forEach(s => {
                 const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat.length > 8 ? cat.substring(0, 8) + '…' : cat;
-                opt.title = cat;
+                opt.value = s;
+                opt.textContent = s.length > 8 ? s.substring(0, 8) + '…' : s;
+                opt.title = s;
                 sel.appendChild(opt);
             });
         });
@@ -420,7 +420,7 @@ function loadCases(page) {
     const start = document.getElementById('filter-start').value;
     const end = document.getElementById('filter-end').value;
     if (status) params.set('status', status);
-    if (category) params.set('category', category);
+    if (category) params.set('source', category);
     if (score) params.set('score', score);
     if (keyword) params.set('keyword', keyword);
     if (start) params.set('start_date', start.includes('T') ? start : start + 'T00:00:00');
@@ -444,6 +444,7 @@ function loadCases(page) {
 <td class="truncate" title="${esc(c.source)}">${esc(c.source) || '-'}</td>
 <td class="truncate" title="${esc(c.category)}">${esc(c.category) || '-'}</td>
                     <td class="truncate" title="${esc(c.description)}">${esc(c.description) || '-'}</td>
+                    <td>${c.has_detail ? `<a href="/annotate/${esc(c.case_id)}" class="case-id-link">查看分析</a>` : '-'}</td>
                     <td>${c.created_at ? new Date(c.created_at).toLocaleString('zh-CN') : '-'}</td>
                     <td><span class="badge badge-${esc(c.status)}">${c.status === 'pending' ? '待标注' : '已标注'}</span></td>
                     <td>${scoreLabel(c.accuracy_score)}</td>
@@ -452,7 +453,6 @@ function loadCases(page) {
                     <td>${formatOverall(c.overall_score)}</td>
                     <td class="truncate" title="${esc(c.root_cause)}">${esc(c.root_cause) || '-'}</td>
                     <td class="truncate" title="${esc(c.remark)}">${esc(c.remark) || '-'}</td>
-                    <td>${c.has_detail ? `<a href="/annotate/${esc(c.case_id)}" class="case-id-link">查看分析</a>` : '-'}</td>
                     <td class="action-cell"><div class="action-btns"><a href="/annotate/${esc(c.case_id)}" class="btn btn-sm ${c.status === 'pending' ? 'btn-annotate' : 'btn-view'}">${c.status === 'pending' ? '去标注' : '查看'}</a><button class="btn btn-sm btn-delete" onclick="deleteCase('${esc(c.case_id)}')">删除</button></div></td>
                 </tr>
                 `;
@@ -561,7 +561,7 @@ document.getElementById('search-keyword').addEventListener('input', function() {
     _searchTimer = setTimeout(() => loadCases(1), 400);
 });
 
-loadCategories();
+loadSources();
 loadCases(1);
 </script>
 {% endblock %}

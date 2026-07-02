@@ -71,16 +71,7 @@
 
                 <div class="form-group">
                     <label>优化方向</label>
-                    <div class="radio-group" id="optimization-direction-group">
-                        <label>
-                            <input type="radio" name="optimization_direction" value="optimize_output_format">
-                            优化Skill输出格式
-                        </label>
-                        <label>
-                            <input type="radio" name="optimization_direction" value="optimize_analysis_process">
-                            优化Skill分析过程
-                        </label>
-                    </div>
+                    <textarea id="optimization-direction" rows="4" placeholder="可从以下方向提供建议：分析思路优化、输出格式调整、分析技巧补充、Skill 配置改进等，帮助 Agent 持续提升分析质量"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -164,10 +155,7 @@ function loadCaseData() {
                 setScore('readability', data.annotation.readability_score);
                 calcOverall();
                 // 回显优化方向
-                if (data.annotation.optimization_direction) {
-                    const radio = document.querySelector(`input[name="optimization_direction"][value="${data.annotation.optimization_direction}"]`);
-                    if (radio) radio.checked = true;
-                }
+                document.getElementById('optimization-direction').value = data.annotation.optimization_direction || '';
                 document.querySelector('#annotate-form button[type="submit"]').textContent = '更新标注';
             }
         })
@@ -241,7 +229,7 @@ document.getElementById('annotate-form').addEventListener('submit', function(e) 
         operability_score: operability,
         readability_score: readability,
         remark: document.getElementById('remark').value,
-        optimization_direction: document.querySelector('input[name="optimization_direction"]:checked')?.value || null,
+        optimization_direction: document.getElementById('optimization-direction').value || null,
         updated_at: document.getElementById('updated-at').value,
     };
 

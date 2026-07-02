@@ -63,6 +63,7 @@ def create_case():
 def list_cases():
     status = request.args.get("status")
     category = request.args.get("category")
+    source = request.args.get("source")
     score = request.args.get("score", type=float)
     keyword = request.args.get("keyword")
     start_date = request.args.get("start_date")
@@ -78,6 +79,8 @@ def list_cases():
         q = q.filter(Case.status == status)
     if category:
         q = q.filter(Case.category == category)
+    if source:
+        q = q.filter(Case.source == source)
     if score is not None:
         q = q.filter(Case.annotation.has(Annotation.overall_score == score))
     if keyword:

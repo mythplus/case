@@ -21,6 +21,7 @@ class Case(db.Model):
     use_sliding_window = db.Column(db.Boolean, nullable=True, default=False)
     agent_input = db.Column(db.Text, nullable=False)
     agent_output = db.Column(db.Text, nullable=False)
+    detail = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(16), nullable=False, default="pending")
     created_at = db.Column(db.DateTime, nullable=False, default=_now)
     updated_at = db.Column(db.DateTime, nullable=False, default=_now, onupdate=_now)
@@ -39,6 +40,7 @@ class Case(db.Model):
             d["source"] = self.source
             d["description"] = self.description
             d["use_sliding_window"] = self.use_sliding_window
+            d["has_detail"] = bool(self.detail)
             if self.annotation:
                 d["accuracy_score"] = self.annotation.accuracy_score
                 d["operability_score"] = self.annotation.operability_score
@@ -56,6 +58,7 @@ class Case(db.Model):
                 "description": self.description,
                 "agent_input": self.agent_input,
                 "agent_output": self.agent_output,
+                "detail": self.detail,
             }
         )
         return d

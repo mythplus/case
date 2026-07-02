@@ -29,6 +29,7 @@ def create_case():
         category=data.get("category"),
         agent_input=data["agent_input"],
         agent_output=data["agent_output"],
+        detail=data.get("detail"),
     )
     db.session.add(case)
     db.session.commit()

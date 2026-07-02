@@ -142,6 +142,7 @@ function loadCaseData() {
                 <div><strong>Tokens：</strong>${c.tokens_consumed != null ? esc(c.tokens_consumed) : '-'}</div>
                 <div class="full-width"><strong>Agent 输入：</strong><pre>${esc(c.agent_input) || '-'}</pre></div>
                 <div class="full-width"><strong>Agent 输出：</strong><pre>${esc(c.agent_output) || '-'}</pre></div>
+                <div class="full-width"><strong>详细分析：</strong><pre>${esc(c.detail) || '-'}</pre></div>
             `;
             document.getElementById('updated-at').value = c.updated_at || '';
 

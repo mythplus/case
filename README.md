@@ -126,6 +126,7 @@ case/
 | `use_sliding_window` | BOOLEAN | 是否使用滑动窗口 |
 | `agent_input` | TEXT | Agent 输入 (query) |
 | `agent_output` | TEXT | Agent 输出 (answer) |
+| `detail` | TEXT | 详细分析过程（Markdown，可选，由调用方随请求传入） |
 | `status` | STRING | `pending` / `annotated` |
 | `created_at` | DATETIME | 创建时间 |
 | `updated_at` | DATETIME | 更新时间 |

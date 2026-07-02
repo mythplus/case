@@ -91,6 +91,7 @@
             <th style="width:6%">整体分数</th>
             <th style="width:10%">问题根因</th>
             <th style="width:10%">备注</th>
+            <th style="width:8%">详细分析</th>
 <th style="width:8%">操作</th>
         </tr>
     </thead>
@@ -451,6 +452,7 @@ function loadCases(page) {
                     <td>${formatOverall(c.overall_score)}</td>
                     <td class="truncate" title="${esc(c.root_cause)}">${esc(c.root_cause) || '-'}</td>
                     <td class="truncate" title="${esc(c.remark)}">${esc(c.remark) || '-'}</td>
+                    <td>${c.has_detail ? `<a href="/annotate/${esc(c.case_id)}" class="case-id-link">查看分析</a>` : '-'}</td>
                     <td class="action-cell"><div class="action-btns"><a href="/annotate/${esc(c.case_id)}" class="btn btn-sm ${c.status === 'pending' ? 'btn-annotate' : 'btn-view'}">${c.status === 'pending' ? '去标注' : '查看'}</a><button class="btn btn-sm btn-delete" onclick="deleteCase('${esc(c.case_id)}')">删除</button></div></td>
                 </tr>
                 `;

@@ -176,9 +176,9 @@ const avgOverall = data.averages && data.averages.overall ? data.averages.overal
                 </div>
             `;
 
-            document.getElementById('category-table').innerHTML = data.category_distribution.map(c => `
+            document.getElementById('category-table').innerHTML = data.source_distribution.map(c => `
                 <tr>
-                    <td class="truncate">${c.category}</td>
+                    <td class="truncate">${c.source}</td>
                     <td>${c.annotated}</td>
                     <td>${c.pending}</td>
                     <td>${c.avg_overall}</td>

@@ -268,9 +268,9 @@ def stats():
         else:
             src_map[src]["pending"] += 1
 
-    category_distribution = [
+    source_distribution = [
         {
-            "category": src,
+            "source": src,
             "annotated": v["annotated"],
             "pending": v["pending"],
             "avg_overall": round(sum(v["scores"]) / len(v["scores"]), 2) if v["scores"] else 0,
@@ -299,6 +299,6 @@ def stats():
             "annotation_rate": round(len(annotated) / len(all_cases), 2) if all_cases else 0,
         },
         "averages": averages,
-        "category_distribution": category_distribution,
+        "source_distribution": source_distribution,
         "low_score_cases": low_score,
     }), 200

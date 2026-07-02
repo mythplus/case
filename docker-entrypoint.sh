@@ -14,8 +14,8 @@ db = os.environ.get("DATABASE", "/app/data/annotation.db")
 if not os.path.exists(db):
     print("DB 不存在，将由应用启动时通过 create_all 创建（已含 detail 列）")
 else:
-    conn = sqlite3.connect(db)
     try:
+        conn = sqlite3.connect(db)
         cols = [r[1] for r in conn.execute("PRAGMA table_info(cases)").fetchall()]
         if "detail" not in cols:
             conn.execute("ALTER TABLE cases ADD COLUMN detail TEXT")
@@ -23,8 +23,10 @@ else:
             print("已为存量库添加 detail 列")
         else:
             print("detail 列已存在，无需变更")
-    finally:
         conn.close()
+    except Exception as e:
+        # 表尚未创建等异常不阻断启动，交给后续 create_all 兜底
+        print("初始化 detail 列时跳过（将由应用 create_all 处理）：", e)
 PY
 
 # 3) 启动 Web 服务
